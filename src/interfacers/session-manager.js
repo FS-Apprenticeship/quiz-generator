@@ -15,7 +15,7 @@ export async function signInWithEmail(email, password) {
   return { data, error: undefined }
 }
 
-export async function signOut(access_token) {
+export async function signOutUser(access_token) {
   const { error } = await supabase.auth.signOut(access_token)
 
   if (error !== null) return false
