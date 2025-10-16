@@ -50,27 +50,20 @@ const quizInformationstructure = {
   type: 'json_schema',
   name: 'quiz_information',
   schema: {
-    type: 'object',
-    properties: {
-      questions: {
-        type: 'array',
-        minItems: 5,
-        maxItems: 5,
-        items: {
-          type: 'object',
-          properties: {
-            explanation: { type: 'string' },
-            question: { type: 'string' },
-            correct_answer: { type: 'string' },
-            fake_answers: { type: 'array', items: { type: 'string' } },
-          },
-          required: ['explanation', 'question', 'correct_answer', 'fake_answers'],
-          additionalProperties: false,
-        },
+    type: 'array',
+    minItems: 5,
+    maxItems: 5,
+    items: {
+      type: 'object',
+      properties: {
+        explanation: { type: 'string' },
+        question: { type: 'string' },
+        correct_answer: { type: 'string' },
+        fake_answers: { type: 'array', items: { type: 'string' } },
       },
+      required: ['explanation', 'question', 'correct_answer', 'fake_answers'],
+      additionalProperties: false,
     },
-    required: ['questions'],
-    additionalProperties: false,
   },
 }
 
