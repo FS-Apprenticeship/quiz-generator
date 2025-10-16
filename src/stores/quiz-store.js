@@ -4,6 +4,7 @@ import {
   fetchQuiz,
   fetchQuizzes,
   storeQuiz,
+  updateResponse as updateResponseInDB,
 } from '@/interfacers/quiz-storage'
 import { useUserStore } from './user-store'
 import { defineStore } from 'pinia'
@@ -47,7 +48,13 @@ export const useQuizStore = defineStore('quiz', () => {
   }
 
   async function createResponse(previousResponse = null) {
-    const responseData = { quizID: quiz.value.id, basedOn: previousResponse }
+    const responseData = {
+      quizID: quiz.value.id,
+      basedOn: previousResponse,
+      answers: quiz.value.questions.map((question) => {
+        return { id: question.id, answer: null, attempts: 0 }
+      }),
+    }
 
     const { data, error } = await storeResponse(responseData)
 
@@ -81,10 +88,26 @@ export const useQuizStore = defineStore('quiz', () => {
     response.value = data
     return true
   }
-  async function updateResponse() {}
-  async function getFeedback() {}
-  async function retryMissedQuestions() {}
-  async function adaptiveRetry() {}
+  async function updateResponse(questionID, answer) {
+    const answerToChange = response.value.answers.find((answer) => answer.id === questionID)
+    answerToChange.answer = answer
+    answerToChange.attempts++
+    response.value.updatedAt = new Date()
+
+    const { data, error } = updateResponseInDB(response.value)
+    if (error) return false
+    response.value = data
+    return true
+  }
+  async function completeQuizAndGetFeedback() {
+    //Need Feedback merge
+  }
+  async function retryMissedQuestions() {
+    //Need Feedback merge
+  }
+  async function adaptiveRetry() {
+    //Not yet
+  }
 
   return {
     quizzes,
@@ -96,7 +119,7 @@ export const useQuizStore = defineStore('quiz', () => {
     getQuiz,
     getResponse,
     updateResponse,
-    getFeedback,
+    completeQuizAndGetFeedback,
     retryMissedQuestions,
     adaptiveRetry,
   }

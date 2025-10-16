@@ -84,7 +84,7 @@ function prepareInitialResponseData(initialResponse) {
     based_on: initialResponse.basedOn,
     completed: false,
     final_score: null,
-    answers: null,
+    answers: initialResponse.answers,
     feedback: null,
     resources: null,
   }
