@@ -1,4 +1,4 @@
-import { getLLMResponse } from '@/lib/llm' //Currently doesn't work due to getLLMResponse not being done on the main branch
+import { getLLMResponse } from '@/lib/llm'
 
 const feedbackPrompt = `The user has just completed a quiz and your task is to make conversational and extemely informative feedback.
 You will be fed the question, what the question was about, the true answer, what the user answered, and the false answers to the question. If the user has taken the quiz before, you will also be fed their previous attempts, as those may help you in constructing relevant understanding
