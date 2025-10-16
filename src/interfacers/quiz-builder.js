@@ -76,8 +76,6 @@ export async function buildSourceInformation(topic, time, grade) {
     },
   ]
 
-  console.log('making summary')
-
   const response = await getLLMResponse({
     model: 'gpt-4o-mini',
     input: inputs,
@@ -108,8 +106,6 @@ export async function buildQuiz(topic, time, grade, information) {
     },
   ]
 
-  console.log('making quiz')
-
   const response = await getLLMResponse({
     model: 'gpt-4o-mini',
     input: inputs,
@@ -123,8 +119,6 @@ export async function buildQuiz(topic, time, grade, information) {
   if (response.refusal) {
     throw new Error(`The model refused due to ${response.refusal}`)
   }
-
-  console.log('quiz returned', JSON.parse(response.output_text))
 
   return JSON.parse(response.output_text)
 }

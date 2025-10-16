@@ -1,7 +1,14 @@
-import { fetchMostRecentResponse, fetchQuiz, fetchQuizzes } from '@/interfacers/quiz-storage'
+import {
+  createResponse as storeResponse,
+  fetchMostRecentResponse,
+  fetchQuiz,
+  fetchQuizzes,
+  storeQuiz,
+} from '@/interfacers/quiz-storage'
 import { useUserStore } from './user-store'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { buildQuiz, buildSourceInformation } from '@/interfacers/quiz-builder'
 
 export const useQuizStore = defineStore('quiz', () => {
   const user = useUserStore()
@@ -9,7 +16,51 @@ export const useQuizStore = defineStore('quiz', () => {
   const quiz = ref(undefined)
   const response = ref(undefined)
 
-  async function createQuiz() {}
+  async function createQuiz(topic, time, level) {
+    try {
+      const information = await buildSourceInformation(topic, time, level)
+      const quizQuestions = await buildQuiz(topic, time, level, information)
+
+      quizQuestions.forEach((question, index) => {
+        question.id = index
+      })
+
+      const quizData = {
+        topic,
+        level,
+        topicInformation: information,
+        questions: quizQuestions,
+      }
+
+      const { data, error } = await storeQuiz(quizData)
+
+      if (error) throw new Error(error)
+
+      quiz.value = data
+
+      await createResponse()
+    } catch (e) {
+      alert(e)
+      return false
+    }
+    return true
+  }
+
+  async function createResponse(previousResponse = null) {
+    const responseData = { quizID: quiz.value.id, basedOn: previousResponse }
+
+    const { data, error } = await storeResponse(responseData)
+
+    if (error === undefined) {
+      alert(error)
+      return false
+    }
+
+    response.value = data
+
+    return true
+  }
+
   async function getQuizzes() {
     const { data, error } = fetchQuizzes(user.id.value)
     if (error !== undefined) return false
@@ -40,6 +91,7 @@ export const useQuizStore = defineStore('quiz', () => {
     quiz,
     response,
     createQuiz,
+    createResponse,
     getQuizzes,
     getQuiz,
     getResponse,
