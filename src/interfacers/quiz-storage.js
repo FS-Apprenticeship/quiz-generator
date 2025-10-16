@@ -84,7 +84,7 @@ function prepareInitialResponseData(initialResponse) {
     based_on: initialResponse.basedOn,
     completed: false,
     final_score: null,
-    answers: null,
+    answers: initialResponse.answers,
     feedback: null,
     resources: null,
   }
@@ -105,10 +105,19 @@ function convertResponseForDatabase(responseData) {
   }
 }
 
-export async function fetchResponse(quizID, responseID) {
+export async function fetchMostRecentResponse(quizID) {
+  // const local = JSON.parse(localStorage.getItem('response') ?? '') Will figure out how I want to handle this
+  const { data, error } = fetchResponseAndPredecessors(quizID)
+
+  if (error !== undefined) return { data, error }
+  return { data: data[0], error }
+}
+
+export async function fetchResponse(quizID, responseID, allowLocal = true) {
   const local = JSON.parse(localStorage.getItem('response') ?? '')
 
-  if (local.quizID === quizID && local.id === responseID) return { data: local, error: undefined }
+  if (local.quizID === quizID && local.id === responseID && allowLocal)
+    return { data: local, error: undefined }
   else {
     const { data, error } = await supabase
       .from('responses')
@@ -126,9 +135,16 @@ export async function fetchResponse(quizID, responseID) {
   }
 }
 
-export async function fetchResponseAndPredecessors() {
-  //This one is going to be the toughest one
-  //Will skip for now
+export async function fetchResponseAndPredecessors(quizID) {
+  //This one is going to be the toughest one to do with the API when I add the adaptive retry, I think
+  const { data, error } = await supabase
+    .from('responses')
+    .select('*')
+    .eq('quiz_id', quizID)
+    .order('created_at', { ascending: false })
+
+  if (error !== null) return { data: undefined, error: 'There was an error' }
+  return { data: data.map(convertResponseDataToObject), error: undefined }
 }
 
 export async function createResponse(responseData) {

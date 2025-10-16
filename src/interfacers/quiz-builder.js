@@ -50,27 +50,20 @@ const quizInformationstructure = {
   type: 'json_schema',
   name: 'quiz_information',
   schema: {
-    type: 'object',
-    properties: {
-      questions: {
-        type: 'array',
-        minItems: 5,
-        maxItems: 5,
-        items: {
-          type: 'object',
-          properties: {
-            explanation: { type: 'string' },
-            question: { type: 'string' },
-            correct_answer: { type: 'string' },
-            fake_answers: { type: 'array', items: { type: 'string' } },
-          },
-          required: ['explanation', 'question', 'correct_answer', 'fake_answers'],
-          additionalProperties: false,
-        },
+    type: 'array',
+    minItems: 5,
+    maxItems: 5,
+    items: {
+      type: 'object',
+      properties: {
+        explanation: { type: 'string' },
+        question: { type: 'string' },
+        correct_answer: { type: 'string' },
+        fake_answers: { type: 'array', items: { type: 'string' } },
       },
+      required: ['explanation', 'question', 'correct_answer', 'fake_answers'],
+      additionalProperties: false,
     },
-    required: ['questions'],
-    additionalProperties: false,
   },
 }
 
@@ -82,8 +75,6 @@ export async function buildSourceInformation(topic, time, grade) {
       content: `I want a summary on ${topic}. I have studied it for ${time}. I have attained a ${grade} level of overall learning`,
     },
   ]
-
-  console.log('making summary')
 
   const response = await getLLMResponse({
     model: 'gpt-4o-mini',
@@ -115,8 +106,6 @@ export async function buildQuiz(topic, time, grade, information) {
     },
   ]
 
-  console.log('making quiz')
-
   const response = await getLLMResponse({
     model: 'gpt-4o-mini',
     input: inputs,
@@ -130,8 +119,6 @@ export async function buildQuiz(topic, time, grade, information) {
   if (response.refusal) {
     throw new Error(`The model refused due to ${response.refusal}`)
   }
-
-  console.log('quiz returned', JSON.parse(response.output_text))
 
   return JSON.parse(response.output_text)
 }
