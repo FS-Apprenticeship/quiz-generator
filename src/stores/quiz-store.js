@@ -10,6 +10,7 @@ import { useUserStore } from './user-store'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { buildQuiz, buildSourceInformation } from '@/interfacers/quiz-builder'
+import { createAdditionResources, makeFeedback } from '@/interfacers/feedback-generator'
 
 export const useQuizStore = defineStore('quiz', () => {
   const user = useUserStore()
@@ -52,7 +53,7 @@ export const useQuizStore = defineStore('quiz', () => {
       quizID: quiz.value.id,
       basedOn: previousResponse,
       answers: quiz.value.questions.map((question) => {
-        return { id: question.id, answer: null, attempts: 0 }
+        return { id: question.id, answer: null, updatesToAnswer: 0, correct: null }
       }),
     }
 
@@ -89,9 +90,11 @@ export const useQuizStore = defineStore('quiz', () => {
     return true
   }
   async function updateResponse(questionID, answer) {
+    if (response.value.completed) return false
     const answerToChange = response.value.answers.find((answer) => answer.id === questionID)
     answerToChange.answer = answer
-    answerToChange.attempts++
+    answerToChange.correct = quiz.value.questions[answer.id].correct_answer === answer
+    answerToChange.updatesToAnswer++
     response.value.updatedAt = new Date()
 
     const { data, error } = updateResponseInDB(response.value)
@@ -100,7 +103,53 @@ export const useQuizStore = defineStore('quiz', () => {
     return true
   }
   async function completeQuizAndGetFeedback() {
-    //Need Feedback merge
+    try {
+      const responseValue = response.value
+      const answers = responseValue.answers
+
+      const confirmAnswered = answers.every((answer) => answer.answer !== null)
+      if (!confirmAnswered) throw new Error("Hasn't answered all questions")
+
+      const score =
+        answers.reduce(
+          (accumulator, answer) => (answer.correct ? accumulator + 1 : accumulator),
+          0,
+        ) / answers.length
+
+      const interleavedAnswersForLLM = []
+      for (const answer in answers) {
+        const question = quiz.value.questions[answer.id]
+        interleavedAnswersForLLM.push({
+          question: question.question,
+          aboutQuestion: question.explanation,
+          correctAnswer: question.correct_answer,
+          user_answer: answer,
+          fakeAnswers: question.fake_answers,
+        })
+      }
+
+      //Both of this should have previous answers fed in at a later point
+      const feedback = makeFeedback(interleavedAnswersForLLM)
+      const additionalResources = createAdditionResources(
+        quiz.value.topicInformation,
+        interleavedAnswersForLLM,
+        feedback,
+      )
+
+      responseValue.updatedAt = new Date()
+      responseValue.completed = true
+      responseValue.finalScore = score
+      responseValue.feedback = feedback
+      responseValue.resources = additionalResources
+
+      const { data, error } = updateResponseInDB(responseValue)
+      if (error) throw new Error('DB Error')
+      response.value = data
+      return true
+    } catch (e) {
+      alert(e)
+      return false
+    }
   }
   async function retryMissedQuestions() {
     //Need Feedback merge

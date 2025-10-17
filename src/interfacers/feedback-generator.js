@@ -24,7 +24,7 @@ const feedbackInformationStructure = {
   },
 }
 
-export async function makeFeedback(quizResponse, previousAttempts) {
+export async function makeFeedback(quizResponse, previousAttempts = []) {
   const inputs = [
     { role: 'developer', content: feedbackPrompt },
     ...previousAttempts.map((attemptInformation, index) => {
@@ -82,7 +82,12 @@ const additionResourcesStructure = {
   },
 }
 
-export async function createAdditionResources(sourceInformation, quizResponse, previousAttempts) {
+export async function createAdditionResources(
+  sourceInformation,
+  quizResponse,
+  feedback,
+  previousAttempts = [],
+) {
   const inputs = [
     { role: 'developer', content: additionalResourcesPrompt },
     ...previousAttempts.map((attemptInformation, index) => {
@@ -93,6 +98,7 @@ export async function createAdditionResources(sourceInformation, quizResponse, p
     }),
     { role: 'assistant', content: sourceInformation },
     { role: 'user', content: `Here is my current attempt: ${quizResponse}` },
+    { role: 'assistant', content: `Here is the direct feedback: ${feedback}` },
   ]
 
   const response = await getLLMResponse({
