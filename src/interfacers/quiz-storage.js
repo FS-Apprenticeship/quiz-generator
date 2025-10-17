@@ -53,7 +53,7 @@ export async function fetchQuizzes(userID) {
 }
 
 export async function storeQuiz(preQuizData) {
-  const { data, error } = supabase
+  const { data, error } = await supabase
     .from('quizzes')
     .insert(convertQuizDataForDatabase(preQuizData))
     .select()

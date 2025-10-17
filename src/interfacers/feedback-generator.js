@@ -11,16 +11,23 @@ const feedbackInformationStructure = {
   type: 'json_schema',
   name: 'feedback_information',
   schema: {
-    type: 'array',
-    items: {
-      type: 'object',
-      properties: {
-        questionID: { type: 'number' },
-        feedback: { type: 'string' },
+    type: 'object',
+    properties: {
+      feedbackItems: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            questionID: { type: 'number' },
+            feedback: { type: 'string' },
+          },
+          required: ['questionID', 'feedback'],
+          additionalProperties: false,
+        },
       },
-      required: ['questionID', 'feedback'],
-      additionalProperties: false,
     },
+    required: ['feedbackItems'],
+    additionalProperties: false,
   },
 }
 
@@ -50,7 +57,7 @@ export async function makeFeedback(quizResponse, previousAttempts = []) {
     throw new Error(`The model refused due to ${response.refusal}`)
   }
 
-  return JSON.parse(response.output_text)
+  return JSON.parse(response.output_text).feedbackItems
 }
 
 const additionalResourcesPrompt = `You have the task of providing the user with additional resources after they've completed a quiz on a topic. For example you may refer the user back to part of the review text that you will be provided. You will also write out the parts you're referring to in the sectionsToReview section of your response.
