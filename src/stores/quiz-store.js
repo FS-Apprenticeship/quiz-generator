@@ -8,7 +8,7 @@ import {
 } from '@/interfacers/quiz-storage'
 import { useUserStore } from './user-store'
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { buildQuiz, buildSourceInformation } from '@/interfacers/quiz-builder'
 import { createAdditionResources, makeFeedback } from '@/interfacers/feedback-generator'
 
@@ -70,12 +70,17 @@ export const useQuizStore = defineStore('quiz', () => {
   }
 
   async function getQuizzes() {
+    if (user.id === undefined) return false
     const { data, error } = fetchQuizzes(user.id.value)
     if (error !== undefined) return false
     quizzes.value = data
     return true
   }
+
+  watch(user.id, getQuizzes)
+
   async function getQuiz(quizID) {
+    if (quiz.value.id === quizID) return true
     const { data, error } = fetchQuiz(user.id.value, quizID)
 
     if (error !== undefined) return false
