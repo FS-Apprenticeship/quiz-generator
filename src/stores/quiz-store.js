@@ -32,6 +32,7 @@ export const useQuizStore = defineStore('quiz', () => {
         level,
         topicInformation: information,
         questions: quizQuestions,
+        userID: user.id,
       }
 
       const { data, error } = await storeQuiz(quizData)
@@ -60,7 +61,7 @@ export const useQuizStore = defineStore('quiz', () => {
     const { data, error } = await storeResponse(responseData)
 
     if (error === undefined) {
-      alert(error)
+      // alert(error)
       return false
     }
 
@@ -71,24 +72,30 @@ export const useQuizStore = defineStore('quiz', () => {
 
   async function getQuizzes() {
     if (user.id === undefined) return false
-    const { data, error } = fetchQuizzes(user.id.value)
+    const { data, error } = await fetchQuizzes(user.id)
     if (error !== undefined) return false
     quizzes.value = data
     return true
   }
 
-  watch(user.id, getQuizzes)
+  watch(user, getQuizzes)
 
   async function getQuiz(quizID) {
-    if (quiz.value.id === quizID) return true
-    const { data, error } = fetchQuiz(user.id.value, quizID)
+    if (quiz.value?.id === quizID) return true
+    const { data, error } = await fetchQuiz(user.id, quizID)
 
     if (error !== undefined) return false
     quiz.value = data
+
+    let hasResponse = await getResponse()
+    while (!hasResponse) {
+      hasResponse = await createResponse()
+    }
+
     return true
   }
   async function getResponse() {
-    const { data, error } = fetchMostRecentResponse(quiz.value.id)
+    const { data, error } = await fetchMostRecentResponse(quiz.value.id)
     if (error !== undefined) return false
 
     response.value = data

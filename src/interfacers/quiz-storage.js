@@ -21,6 +21,7 @@ function convertQuizDataForDatabase(preData) {
     level: preData.level,
     topic_information: preData.topicInformation,
     questions: preData.questions,
+    user_id: preData.userID,
   }
 }
 
@@ -49,7 +50,7 @@ export async function fetchQuizzes(userID) {
 
   if (error !== null) return { data: undefined, error: 'There was an error' }
 
-  return { data: data, error: undefined }
+  return { data, error: undefined }
 }
 
 export async function storeQuiz(preQuizData) {
@@ -58,9 +59,9 @@ export async function storeQuiz(preQuizData) {
     .insert(convertQuizDataForDatabase(preQuizData))
     .select()
 
-  if (error !== null) return { data: false, error: 'There was an error' }
-  localStorage.setItem('quiz', JSON.stringify(data))
-  return { data: true, error: undefined }
+  if (error !== null) return { data: undefined, error: 'There was an error' }
+  localStorage.setItem('quiz', JSON.stringify(data[0]))
+  return { data: data[0], error: undefined }
 }
 
 function convertResponseDataToObject(responseFromDB) {
@@ -107,7 +108,7 @@ function convertResponseForDatabase(responseData) {
 
 export async function fetchMostRecentResponse(quizID) {
   // const local = JSON.parse(localStorage.getItem('response') ?? '') Will figure out how I want to handle this
-  const { data, error } = fetchResponseAndPredecessors(quizID)
+  const { data, error } = await fetchResponseAndPredecessors(quizID)
 
   if (error !== undefined) return { data, error }
   return { data: data[0], error }
