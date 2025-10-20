@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/database'
 
 export async function setupUser(id, name, educationLevel) {
-  const { data, error } = supabase
+  const { data, error } = await supabase
     .from('users')
     .insert({
       id: id,

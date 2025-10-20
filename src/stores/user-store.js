@@ -39,7 +39,7 @@ export const useUserStore = defineStore('user', () => {
     userData.value = await retrieveUser(user.value.id)
 
     if (userData.value === undefined)
-      userData.value = await setupUser(data.id, data.email, 'average')
+      userData.value = await setupUser(data.user.id, data.user.email, 'average')
 
     if (userData.value === undefined) {
       return false
