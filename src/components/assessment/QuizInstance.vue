@@ -17,10 +17,10 @@ quizStore.getQuiz(route.params.id).then((success) => {
 <template>
   <template v-if="resolved && quizExists">
     <header>
-      <h1>{{ quizStore.quiz.value.topic }}</h1>
+      <h1>{{ quizStore.quiz?.topic }}</h1>
     </header>
     <main>
-      {{ quizStore.quiz.value }}
+      {{ JSON.stringify(quizStore.quiz.questions) }}
     </main>
   </template>
   <template v-else-if="resolved">

@@ -1,5 +1,6 @@
 import FinalAssessment from '@/components/assessment/FinalAssessment.vue'
 import NewQuiz from '@/components/assessment/NewQuiz.vue'
+import QuizHolder from '@/components/assessment/QuizHolder.vue'
 import QuizInstance from '@/components/assessment/QuizInstance.vue'
 import SignIn from '@/components/auth/SignIn.vue'
 import SignUp from '@/components/auth/SignUp.vue'
@@ -16,8 +17,12 @@ const router = createRouter({
     { path: '/user', component: UserPage },
     {
       path: '/quiz',
-      component: NewQuiz,
+      component: QuizHolder,
       children: [
+        {
+          path: '',
+          component: NewQuiz,
+        },
         {
           path: ':id',
           component: QuizInstance,
