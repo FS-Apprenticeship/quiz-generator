@@ -8,8 +8,9 @@ import {
 } from '@/interfacers/quiz-storage'
 import { useUserStore } from './user-store'
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { buildQuiz, buildSourceInformation } from '@/interfacers/quiz-builder'
+import { createAdditionResources, makeFeedback } from '@/interfacers/feedback-generator'
 
 export const useQuizStore = defineStore('quiz', () => {
   const user = useUserStore()
@@ -31,6 +32,7 @@ export const useQuizStore = defineStore('quiz', () => {
         level,
         topicInformation: information,
         questions: quizQuestions,
+        userID: user.id,
       }
 
       const { data, error } = await storeQuiz(quizData)
@@ -52,14 +54,14 @@ export const useQuizStore = defineStore('quiz', () => {
       quizID: quiz.value.id,
       basedOn: previousResponse,
       answers: quiz.value.questions.map((question) => {
-        return { id: question.id, answer: null, attempts: 0 }
+        return { id: question.id, answer: null, updatesToAnswer: 0, correct: null }
       }),
     }
 
     const { data, error } = await storeResponse(responseData)
 
     if (error === undefined) {
-      alert(error)
+      // alert(error)
       return false
     }
 
@@ -69,29 +71,42 @@ export const useQuizStore = defineStore('quiz', () => {
   }
 
   async function getQuizzes() {
-    const { data, error } = fetchQuizzes(user.id.value)
+    if (user.id === undefined) return false
+    const { data, error } = await fetchQuizzes(user.id)
     if (error !== undefined) return false
     quizzes.value = data
     return true
   }
+
+  watch(user, getQuizzes)
+
   async function getQuiz(quizID) {
-    const { data, error } = fetchQuiz(user.id.value, quizID)
+    if (quiz.value?.id === quizID) return true
+    const { data, error } = await fetchQuiz(user.id, quizID)
 
     if (error !== undefined) return false
     quiz.value = data
+
+    let hasResponse = await getResponse()
+    while (!hasResponse) {
+      hasResponse = await createResponse()
+    }
+
     return true
   }
   async function getResponse() {
-    const { data, error } = fetchMostRecentResponse(quiz.value.id)
+    const { data, error } = await fetchMostRecentResponse(quiz.value.id)
     if (error !== undefined) return false
 
     response.value = data
     return true
   }
   async function updateResponse(questionID, answer) {
+    if (response.value.completed) return false
     const answerToChange = response.value.answers.find((answer) => answer.id === questionID)
     answerToChange.answer = answer
-    answerToChange.attempts++
+    answerToChange.correct = quiz.value.questions[answer.id].correct_answer === answer
+    answerToChange.updatesToAnswer++
     response.value.updatedAt = new Date()
 
     const { data, error } = updateResponseInDB(response.value)
@@ -100,7 +115,53 @@ export const useQuizStore = defineStore('quiz', () => {
     return true
   }
   async function completeQuizAndGetFeedback() {
-    //Need Feedback merge
+    try {
+      const responseValue = response.value
+      const answers = responseValue.answers
+
+      const confirmAnswered = answers.every((answer) => answer.answer !== null)
+      if (!confirmAnswered) throw new Error("Hasn't answered all questions")
+
+      const score =
+        answers.reduce(
+          (accumulator, answer) => (answer.correct ? accumulator + 1 : accumulator),
+          0,
+        ) / answers.length
+
+      const interleavedAnswersForLLM = []
+      for (const answer in answers) {
+        const question = quiz.value.questions[answer.id]
+        interleavedAnswersForLLM.push({
+          question: question.question,
+          aboutQuestion: question.explanation,
+          correctAnswer: question.correct_answer,
+          user_answer: answer,
+          fakeAnswers: question.fake_answers,
+        })
+      }
+
+      //Both of this should have previous answers fed in at a later point
+      const feedback = makeFeedback(interleavedAnswersForLLM)
+      const additionalResources = createAdditionResources(
+        quiz.value.topicInformation,
+        interleavedAnswersForLLM,
+        feedback,
+      )
+
+      responseValue.updatedAt = new Date()
+      responseValue.completed = true
+      responseValue.finalScore = score
+      responseValue.feedback = feedback
+      responseValue.resources = additionalResources
+
+      const { data, error } = updateResponseInDB(responseValue)
+      if (error) throw new Error('DB Error')
+      response.value = data
+      return true
+    } catch (e) {
+      alert(e)
+      return false
+    }
   }
   async function retryMissedQuestions() {
     //Need Feedback merge

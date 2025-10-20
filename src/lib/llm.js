@@ -1,8 +1,4 @@
-import {
-  FunctionsHttpError,
-  FunctionsRelayError,
-  FunctionsFetchError,
-} from '../../node_modules/@supabase/supabase-js/dist/module/index'
+import { FunctionsHttpError, FunctionsRelayError, FunctionsFetchError } from '@supabase/supabase-js'
 import { supabase } from './database'
 
 export async function getLLMResponse(promptData) {

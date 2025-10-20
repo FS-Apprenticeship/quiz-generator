@@ -6,11 +6,12 @@ import { computed, ref } from 'vue'
 
 export const useUserStore = defineStore('user', () => {
   const user = ref(undefined)
-  const userData = ref(undefined)
   const session = ref(undefined)
+  const userData = ref(undefined)
 
   const id = computed(() => user.value?.id)
   const email = computed(() => user.value?.email)
+  const standardLevel = computed(() => userData.value?.standard_level)
 
   async function loadUser() {
     const { data, error } = await supabase.auth.refreshSession()
@@ -31,14 +32,14 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function signIn(email, password) {
-    const { data, error } = signInWithEmail(email, password)
+    const { data, error } = await signInWithEmail(email, password)
     if (error !== undefined) return false
     user.value = data.user
     session.value = data.value
     userData.value = await retrieveUser(user.value.id)
 
     if (userData.value === undefined)
-      userData.value = await setupUser(data.id, data.email, 'average')
+      userData.value = await setupUser(data.user.id, data.user.email, 'average')
 
     if (userData.value === undefined) {
       return false
@@ -81,6 +82,7 @@ export const useUserStore = defineStore('user', () => {
     session,
     id,
     email,
+    standardLevel,
     loadUser,
     signUp,
     signIn,
