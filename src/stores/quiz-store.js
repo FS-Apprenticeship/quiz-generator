@@ -50,10 +50,10 @@ export const useQuizStore = defineStore('quiz', () => {
     return true
   }
 
-  async function createResponse(previousResponse = null) {
+  async function createResponse() {
     const responseData = {
       quizID: quiz.value.id,
-      basedOn: previousResponse,
+      basedOn: null,
       answers: quiz.value.questions.map((question) => {
         return { id: question.id, answer: null, updatesToAnswer: 0, correct: null }
       }),
@@ -179,7 +179,29 @@ export const useQuizStore = defineStore('quiz', () => {
     }
   }
   async function retryMissedQuestions() {
-    //Need Feedback merge
+    if (!response.value.completed) return false
+    const incorrectAnswers = response.value.answers.filter((answer) => !answer.correct)
+
+    if (incorrectAnswers.length === 0) return false
+
+    const responseData = {
+      quizID: quiz.value.id,
+      basedOn: response.value.id,
+      answers: incorrectAnswers.map((answer) => {
+        return { id: answer.id, answer: null, updatesToAnswer: 0, correct: null }
+      }),
+    }
+
+    const { data, error } = await storeResponse(responseData)
+
+    if (error === undefined) {
+      // alert(error)
+      return false
+    }
+
+    response.value = data
+
+    return true
   }
   async function adaptiveRetry() {
     //Not yet

@@ -128,7 +128,6 @@ export async function fetchResponse(quizID, responseID, allowLocal = true) {
 
     if (error !== null) return { data: undefined, error: 'There was an error' }
 
-    console.log(data[0].updated_at, local.updatedAt, data[0].updated_at < local.updatedAt)
     if (data[0].updated_at < local.updatedAt) {
       return { data: local, error: undefined }
     } else {

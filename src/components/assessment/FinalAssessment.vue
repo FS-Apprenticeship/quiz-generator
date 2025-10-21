@@ -1,10 +1,11 @@
 <script setup>
 import { useQuizStore } from '@/stores/quiz-store'
 import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const quizStore = useQuizStore()
 const route = useRoute()
+const router = useRouter()
 
 const resolved = ref(false)
 const quizExists = ref(true)
@@ -36,6 +37,18 @@ const responsesToQuestions = computed(() =>
         .sort((a, b) => a.correct - b.correct)
     : [],
 )
+
+const perfectScore = computed(() => response.value.answers.every((answer) => answer.correct))
+
+async function retry() {
+  const success = await quizStore.retryMissedQuestions()
+
+  if (!success) {
+    alert('There was an error in retrying')
+  }
+
+  router.push(`/quiz/${quiz.value.id}`)
+}
 </script>
 
 <template>
@@ -56,6 +69,7 @@ const responsesToQuestions = computed(() =>
         <h2>Recommended Resources:</h2>
         {{ response?.resources ?? 'Loading' }}
       </div>
+      <button :disabled="perfectScore" @click="retry">Retry Missed Questions</button>
     </main>
   </template>
   <template v-else-if="resolved">
