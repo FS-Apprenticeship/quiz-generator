@@ -5,6 +5,7 @@ import {
   fetchQuizzes,
   storeQuiz,
   updateResponse as updateResponseInDB,
+  fetchResponse,
 } from '@/interfacers/quiz-storage'
 import { useUserStore } from './user-store'
 import { defineStore } from 'pinia'
@@ -94,6 +95,19 @@ export const useQuizStore = defineStore('quiz', () => {
 
     return true
   }
+
+  async function getSpecificResponse(quizID, responseID) {
+    const { quizData, quizError } = await fetchQuiz(user.id, quizID)
+    const { responseData, responseError } = await fetchResponse(quizID, responseID)
+
+    if (quizError !== undefined) return false
+    if (responseError !== undefined) return false
+    response.value = responseData
+    quiz.value = quizData
+
+    return true
+  }
+
   async function getResponse() {
     const { data, error } = await fetchMostRecentResponse(quiz.value.id)
     if (error !== undefined) return false
@@ -130,7 +144,7 @@ export const useQuizStore = defineStore('quiz', () => {
         ) / answers.length
 
       const interleavedAnswersForLLM = []
-      for (const answer in answers) {
+      for (const answer of answers) {
         const question = quiz.value.questions[answer.id]
         interleavedAnswersForLLM.push({
           question: question.question,
@@ -142,8 +156,8 @@ export const useQuizStore = defineStore('quiz', () => {
       }
 
       //Both of this should have previous answers fed in at a later point
-      const feedback = makeFeedback(interleavedAnswersForLLM)
-      const additionalResources = createAdditionResources(
+      const feedback = await makeFeedback(interleavedAnswersForLLM)
+      const additionalResources = await createAdditionResources(
         quiz.value.topicInformation,
         interleavedAnswersForLLM,
         feedback,
@@ -155,7 +169,7 @@ export const useQuizStore = defineStore('quiz', () => {
       responseValue.feedback = feedback
       responseValue.resources = additionalResources
 
-      const { data, error } = updateResponseInDB(responseValue)
+      const { data, error } = await updateResponseInDB(responseValue)
       if (error) throw new Error('DB Error')
       response.value = data
       return true
@@ -179,6 +193,7 @@ export const useQuizStore = defineStore('quiz', () => {
     createResponse,
     getQuizzes,
     getQuiz,
+    getSpecificResponse,
     getResponse,
     updateResponse,
     completeQuizAndGetFeedback,

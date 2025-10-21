@@ -1,11 +1,12 @@
 <script setup>
 import { useQuizStore } from '@/stores/quiz-store'
 import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import SingleQuestion from './SingleQuestion.vue'
 
 const quizStore = useQuizStore()
 const route = useRoute()
+const router = useRouter()
 
 const resolved = ref(false)
 const quizExists = ref(true)
@@ -37,6 +38,14 @@ function moveQuestion(direction) {
 
   questionIndex.value = nextIndex
 }
+
+async function submit() {
+  const success = await quizStore.completeQuizAndGetFeedback()
+
+  if (success) {
+    router.push(`/quiz/${quiz.value.id}/response/${response.value.id}`)
+  }
+}
 </script>
 
 <template>
@@ -47,6 +56,7 @@ function moveQuestion(direction) {
     <main>
       <button @click="moveQuestion(-1)">Previous Question</button>
       <button @click="moveQuestion(1)">Next Question</button>
+      <button @click="submit">Submit Quiz</button>
       <SingleQuestion :question="question" :response="questionResponse" />
     </main>
   </template>
