@@ -18,21 +18,23 @@ const quiz = computed(() => quizStore.quiz)
 const response = computed(() => quizStore.response)
 
 const responsesToQuestions = computed(() =>
-  response.value.answers
-    .map((answer) => {
-      const question = quiz.value.questions.find((question) => question.id === answer.id)
-      const feedback =
-        response.value.feedback.find((feedbackItem) => feedbackItem.questionID === answer.ID) ??
-        'No Feedback'
+  response.value
+    ? response.value.answers
+        .map((answer) => {
+          const question = quiz.value.questions.find((question) => question.id === answer.id)
+          const feedback =
+            response.value.feedback.find((feedbackItem) => feedbackItem.questionID === answer.id)
+              ?.feedback ?? 'No Feedback'
 
-      return {
-        question,
-        correct: answer.correct,
-        userAnswer: answer.answer,
-        feedback,
-      }
-    })
-    .sort((a, b) => a.correct - b.correct),
+          return {
+            question,
+            correct: answer.correct,
+            userAnswer: answer.answer,
+            feedback: feedback,
+          }
+        })
+        .sort((a, b) => a.correct - b.correct)
+    : [],
 )
 </script>
 
@@ -47,12 +49,12 @@ const responsesToQuestions = computed(() =>
         Correct Answer: {{ response.question.correct_answer }} Your Answer:
         {{ response.userAnswer }}
 
-        <h3>Feedback:</h3>
+        <h4>Feedback:</h4>
         {{ response.feedback }}
       </div>
       <div>
-        Recommended Resources:
-        {{ response.resources }}
+        <h2>Recommended Resources:</h2>
+        {{ response?.resources ?? 'Loading' }}
       </div>
     </main>
   </template>

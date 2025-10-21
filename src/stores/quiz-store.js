@@ -97,8 +97,8 @@ export const useQuizStore = defineStore('quiz', () => {
   }
 
   async function getSpecificResponse(quizID, responseID) {
-    const { quizData, quizError } = await fetchQuiz(user.id, quizID)
-    const { responseData, responseError } = await fetchResponse(quizID, responseID)
+    const { data: quizData, error: quizError } = await fetchQuiz(user.id, quizID)
+    const { data: responseData, error: responseError } = await fetchResponse(quizID, responseID)
 
     if (quizError !== undefined) return false
     if (responseError !== undefined) return false

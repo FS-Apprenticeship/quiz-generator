@@ -26,8 +26,8 @@ const router = createRouter({
         {
           path: ':id',
           component: QuizInstance,
-          children: [{ path: 'repsonse/:responseID', component: FinalAssessment }],
         },
+        { path: ':id/response/:responseID', component: FinalAssessment },
       ],
     },
   ],

@@ -128,10 +128,11 @@ export async function fetchResponse(quizID, responseID, allowLocal = true) {
 
     if (error !== null) return { data: undefined, error: 'There was an error' }
 
-    if (data[0].updated_at > local.updatedAt) {
-      return convertResponseDataToObject(data[0])
+    console.log(data[0].updated_at, local.updatedAt, data[0].updated_at < local.updatedAt)
+    if (data[0].updated_at < local.updatedAt) {
+      return { data: local, error: undefined }
     } else {
-      return local
+      return { data: convertResponseDataToObject(data[0]), error: undefined }
     }
   }
 }
@@ -155,7 +156,7 @@ export async function createResponse(responseData) {
     .select()
 
   if (error !== null) return { data: undefined, error: 'There was an error' }
-  localStorage.setItem('response', JSON.stringify(data))
+  localStorage.setItem('response', JSON.stringify(data[0]))
   return { data: data[0], error: undefined }
 }
 
@@ -167,6 +168,6 @@ export async function updateResponse(responseData) {
     .select()
 
   if (error !== null) return { data: undefined, error: 'There was an error' }
-  localStorage.setItem('response', JSON.stringify(data))
+  localStorage.setItem('response', JSON.stringify(data[0]))
   return { data: data[0], error: undefined }
 }
