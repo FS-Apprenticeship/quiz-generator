@@ -97,6 +97,7 @@ export const useQuizStore = defineStore('quiz', () => {
   async function getResponse() {
     const { data, error } = await fetchMostRecentResponse(quiz.value.id)
     if (error !== undefined) return false
+    if (data === undefined) return false
 
     response.value = data
     return true
@@ -105,11 +106,11 @@ export const useQuizStore = defineStore('quiz', () => {
     if (response.value.completed) return false
     const answerToChange = response.value.answers.find((answer) => answer.id === questionID)
     answerToChange.answer = answer
-    answerToChange.correct = quiz.value.questions[answer.id].correct_answer === answer
+    answerToChange.correct = quiz.value.questions[answerToChange.id].correct_answer === answer
     answerToChange.updatesToAnswer++
     response.value.updatedAt = new Date()
 
-    const { data, error } = updateResponseInDB(response.value)
+    const { data, error } = await updateResponseInDB(response.value)
     if (error) return false
     response.value = data
     return true

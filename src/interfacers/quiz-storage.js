@@ -149,24 +149,24 @@ export async function fetchResponseAndPredecessors(quizID) {
 }
 
 export async function createResponse(responseData) {
-  const { data, error } = supabase
+  const { data, error } = await supabase
     .from('responses')
     .insert(prepareInitialResponseData(responseData))
     .select()
 
-  if (error !== null) return { data: false, error: 'There was an error' }
+  if (error !== null) return { data: undefined, error: 'There was an error' }
   localStorage.setItem('response', JSON.stringify(data))
-  return { data: true, error: undefined }
+  return { data: data[0], error: undefined }
 }
 
 export async function updateResponse(responseData) {
-  const { data, error } = supabase
+  const { data, error } = await supabase
     .from('responses')
     .update(convertResponseForDatabase(responseData))
     .eq('id', responseData.id)
     .select()
 
-  if (error !== null) return { data: false, error: 'There was an error' }
+  if (error !== null) return { data: undefined, error: 'There was an error' }
   localStorage.setItem('response', JSON.stringify(data))
-  return { data: true, error: undefined }
+  return { data: data[0], error: undefined }
 }
