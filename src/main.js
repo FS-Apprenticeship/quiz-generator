@@ -11,8 +11,7 @@ app.use(createPinia())
 app.use(router)
 
 const userStore = useUserStore()
-userStore.loadUser().then((result) => {
-  if (!result) router.push('/')
-})
+const result = await userStore.loadUser()
+if (!result) router.push('/')
 
 app.mount('#app')
