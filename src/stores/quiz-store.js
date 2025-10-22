@@ -75,6 +75,7 @@ export const useQuizStore = defineStore('quiz', () => {
     if (user.id === undefined) return false
     const { data, error } = await fetchQuizzes(user.id)
     if (error !== undefined) return false
+    data.sort((a, b) => a.created_at < b.created_at)
     quizzes.value = data
     return true
   }

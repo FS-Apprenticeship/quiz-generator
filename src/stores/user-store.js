@@ -11,6 +11,7 @@ export const useUserStore = defineStore('user', () => {
 
   const id = computed(() => user.value?.id)
   const email = computed(() => user.value?.email)
+  const name = computed(() => userData.value?.user_name)
   const standardLevel = computed(() => userData.value?.standard_level)
 
   async function loadUser() {
@@ -35,7 +36,7 @@ export const useUserStore = defineStore('user', () => {
     const { data, error } = await signInWithEmail(email, password)
     if (error !== undefined) return false
     user.value = data.user
-    session.value = data.value
+    session.value = data.session
     userData.value = await retrieveUser(user.value.id)
 
     if (userData.value === undefined)
@@ -82,6 +83,7 @@ export const useUserStore = defineStore('user', () => {
     session,
     id,
     email,
+    name,
     standardLevel,
     loadUser,
     signUp,

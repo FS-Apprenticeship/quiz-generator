@@ -10,8 +10,11 @@ quizStore.getQuizzes()
 </script>
 
 <template>
-  <h1>Hello, {{ user.email }}</h1>
-  <button @click="user.signOut()">Sign Out</button>
+  <header>
+    <h1>Hello, {{ user.name }}</h1>
+    <button @click="alert('Not yet added!')">Account</button>
+    <button @click="signOut()">Sign Out</button>
+  </header>
   <h2>Your Quizzes</h2>
   <ul>
     <button @click="$router.push('quiz')">New Quiz</button>
