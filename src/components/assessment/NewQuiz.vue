@@ -26,8 +26,10 @@ async function submit() {
 </script>
 
 <template>
-  <header>Create a Quiz!</header>
-  <button @click="router.back()">&lt;</button>
+  <header>
+    <button class="return" @click="router.back()"><h1>&lt;</h1></button>
+    <h1 class="title">Create a Quiz</h1>
+  </header>
   <form @submit.prevent="submit">
     <label for="topic">Topic:</label>
     <input id="topic" type="text" v-model="topic" />
@@ -45,50 +47,66 @@ async function submit() {
 
 <style scoped>
 header {
-  background: lightseagreen;
   height: 60px;
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  color: white;
 }
+
 header h1 {
   margin: 0;
+  background-color: inherit;
 }
+
+.title {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 form {
   display: flex;
   flex-direction: column;
   gap: 8px;
   max-width: 420px;
-  margin: 20px auto;
+  margin: calc(25% - 100px) auto 0 auto;
   padding: 16px;
   border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: white 1px solid;
 }
+
 label {
   font-weight: bold;
 }
+
 input {
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 6px;
 }
+
 button[type='submit'] {
   align-self: flex-start;
   padding: 8px 12px;
   border-radius: 6px;
   border: none;
-  background: #2e7d32;
+  background-color: orange;
   color: white;
   cursor: pointer;
 }
+
 button[disabled] {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
 p {
   color: #d32f2f;
   margin: 0;
+}
+
+.return {
+  width: 60px;
+  height: 60px;
+  border: none;
+  background-color: orange;
 }
 </style>

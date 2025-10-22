@@ -35,7 +35,7 @@ async function submit() {
 <template>
   <header>
     <button class="return" @click="router.back()"><h1>&lt;</h1></button>
-    <h1 class="title">Sign In!</h1>
+    <h1 class="title">Sign Up!</h1>
   </header>
   <form @submit.prevent="submit">
     <label for="email-address">Email:</label
