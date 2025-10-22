@@ -54,9 +54,12 @@ async function submit() {
       <h1>{{ quiz?.topic }}</h1>
     </header>
     <main>
-      <button @click="moveQuestion(-1)">Previous Question</button>
-      <button @click="moveQuestion(1)">Next Question</button>
-      <button @click="submit">Submit Quiz</button>
+      <div class="control">
+        <button class="navigation rounded" @click="moveQuestion(-1)">&lt;</button>
+        {{ questionIndex + 1 }} / {{ response.answers.length }}
+        <button class="navigation rounded" @click="moveQuestion(1)">&gt;</button>
+        <button class="submit rounded" @click="submit">Submit Quiz</button>
+      </div>
       <SingleQuestion :question="question" :response="questionResponse" />
     </main>
   </template>
@@ -70,46 +73,59 @@ async function submit() {
 
 <style scoped>
 header {
-  height: 20vh;
+  height: 10%;
+  padding: 10px 10px 0 0;
   width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  background-color: lightseagreen;
-  color: white;
+  justify-content: center;
 }
-header h1 {
-  margin: 0;
-  font-size: 1.75rem;
-}
+
 button.rounded {
   height: 40px;
   border-radius: 8px;
   border: none;
   padding: 0 12px;
-  background: rgba(255, 255, 255, 0.25);
   color: white;
+  background-color: orange;
   cursor: pointer;
 }
+
 button.rounded:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: darkorange;
 }
+
 main {
-  padding: 20px;
+  height: 90%;
+  width: 100%;
 }
-@media (max-width: 600px) {
-  header {
-    flex-direction: column;
-    height: auto;
-    padding: 12px 0;
-  }
-  header h1 {
-    font-size: 1.25rem;
-  }
-  .rounded {
-    width: auto;
-    height: 36px;
-  }
+
+h1 {
+  margin-bottom: 15px;
+}
+
+.control {
+  height: 5%;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navigation {
+  border: none;
+  background-color: orange;
+  height: 100%;
+  width: 50px;
+  margin: 0 10px;
+}
+
+.submit {
+  border: none;
+  background-color: orange;
+  height: 100%;
+  width: auto;
+  padding: 0 12px;
+  margin-left: auto;
+  margin-right: 10px;
 }
 </style>
