@@ -6,57 +6,47 @@ const router = useRouter()
 
 <template>
   <header>
-    <h1>Welcome to the Quiz Generator</h1>
-    <button class="rounded" @click="router.push('/sign-up')">Sign Up</button>
     <button class="rounded" @click="router.push('/sign-in')">Sign In</button>
   </header>
   <main>
-    <p>You can generate a quiz on a topic and then take it!</p>
+    <h1>Welcome to the Quiz Generator</h1>
+    <h1>Take a quiz on [REPLACE WITH TOPIC]</h1>
+    <button class="rounded" @click="router.push('/sign-up')">Sign Up</button>
   </main>
 </template>
 
 <style scoped>
 header {
-  height: 20vh;
+  height: 10%;
+  padding: 10px 10px 0 0;
   width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  background-color: lightseagreen;
-  color: white;
+  justify-content: right;
 }
-header h1 {
-  margin: 0;
-  font-size: 1.75rem;
-}
+
 button.rounded {
   height: 40px;
   border-radius: 8px;
   border: none;
   padding: 0 12px;
-  background: rgba(255, 255, 255, 0.25);
   color: white;
+  background-color: orange;
   cursor: pointer;
 }
+
 button.rounded:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: darkorange;
 }
+
 main {
-  padding: 20px;
+  height: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
-@media (max-width: 600px) {
-  header {
-    flex-direction: column;
-    height: auto;
-    padding: 12px 0;
-  }
-  header h1 {
-    font-size: 1.25rem;
-  }
-  .rounded {
-    width: auto;
-    height: 36px;
-  }
+
+h1 {
+  margin-bottom: 15px;
 }
 </style>
