@@ -24,11 +24,11 @@ async function submit() {
   let success = await user.signIn(emailAddress.value, password.value)
 
   if (!success) error.value = 'Password or email was incorrect!'
-  else router.push('user')
+  else router.push('home')
 }
 
 if (user.user !== undefined) {
-  router.push('user')
+  router.push('home')
 }
 </script>
 

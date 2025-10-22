@@ -1,52 +1,64 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user-store'
+import QuizCard from './assessment/QuizCard.vue'
+import { useQuizStore } from '@/stores/quiz-store'
 
-const router = useRouter()
+const user = useUserStore()
+
+const quizStore = useQuizStore()
+quizStore.getQuizzes()
 </script>
 
 <template>
-  <header>
-    <button class="rounded" @click="router.push('/sign-in')">Sign In</button>
-  </header>
-  <main>
-    <h1>Welcome to the Quiz Generator</h1>
-    <h1>Take a quiz on [REPLACE WITH TOPIC]</h1>
-    <button class="rounded" @click="router.push('/sign-up')">Sign Up</button>
-  </main>
+  <h1>Hello, {{ user.email }}</h1>
+  <button @click="user.signOut()">Sign Out</button>
+  <h2>Your Quizzes</h2>
+  <ul>
+    <button @click="$router.push('quiz')">New Quiz</button>
+    <QuizCard v-for="quiz in quizStore.quizzes" :key="quiz.id" :quiz="quiz" />
+  </ul>
 </template>
 
 <style scoped>
-header {
-  height: 10%;
-  padding: 10px 10px 0 0;
-  width: 100%;
+ul {
   display: flex;
-  justify-content: right;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
-
-button.rounded {
-  height: 40px;
-  border-radius: 8px;
-  border: none;
-  padding: 0 12px;
-  color: white;
-  background-color: orange;
-  cursor: pointer;
-}
-
-button.rounded:hover {
-  background: darkorange;
-}
-
-main {
-  height: 90%;
+.list {
+  height: 63px;
+  width: 50%;
+  border: 1px solid #000;
+  border-radius: 20px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
+  padding: 0 8px;
 }
-
-h1 {
-  margin-bottom: 15px;
+.selected {
+  background: #e5e7eb;
+}
+.edit {
+  font-size: larger;
+  width: 10%;
+  border: none;
+  border-left: 1px solid #000;
+}
+.delete {
+  margin-left: auto;
+  width: 15%;
+  display: flex;
+  justify-content: center;
+}
+#trash-button,
+#delete-button,
+#restore-button {
+  border: none;
+}
+#trash-button {
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
 }
 </style>
