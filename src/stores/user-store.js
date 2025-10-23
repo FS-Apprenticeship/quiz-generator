@@ -50,7 +50,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function updateLevelOfEducation(newLevel) {
-    const { data, error } = updateUser(id, { standard_level: newLevel })
+    const { data, error } = await updateUser(id, { standard_level: newLevel })
 
     if (error !== undefined) return false
 
@@ -59,9 +59,23 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function updateName(newName) {
-    const { data, error } = updateUser(id, { user_name: newName })
+    const { data, error } = await updateUser(id, { user_name: newName })
 
     if (error !== undefined) return false
+
+    userData.value = data
+    return true
+  }
+
+  async function updateBoth(newLevel, newName) {
+    const { data, error } = await updateUser(id.value, {
+      user_name: newName,
+      standard_level: newLevel,
+    })
+
+    if (error !== undefined) return false
+
+    console.log(data, error)
 
     userData.value = data
     return true
@@ -90,6 +104,7 @@ export const useUserStore = defineStore('user', () => {
     signIn,
     updateLevelOfEducation,
     updateName,
+    updateBoth,
     signOut,
   }
 })

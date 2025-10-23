@@ -18,7 +18,7 @@ async function signOut() {
 <template>
   <header>
     <h1>Hello, {{ user.name }}</h1>
-    <button @click="alert('Not yet added!')">Account</button>
+    <button @click="router.push('/account')">Account</button>
     <button @click="signOut()">Sign Out</button>
   </header>
   <h2>Your Quizzes</h2>
