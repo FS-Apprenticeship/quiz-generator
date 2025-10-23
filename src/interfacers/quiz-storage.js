@@ -106,14 +106,6 @@ function convertResponseForDatabase(responseData) {
   }
 }
 
-export async function fetchMostRecentResponse(quizID) {
-  // const local = JSON.parse(localStorage.getItem('response') ?? '') Will figure out how I want to handle this
-  const { data, error } = await fetchResponseAndPredecessors(quizID)
-
-  if (error !== undefined) return { data, error }
-  return { data: data[0], error }
-}
-
 export async function fetchResponse(quizID, responseID, allowLocal = true) {
   const local = JSON.parse(localStorage.getItem('response') ?? '')
 
@@ -128,16 +120,15 @@ export async function fetchResponse(quizID, responseID, allowLocal = true) {
 
     if (error !== null) return { data: undefined, error: 'There was an error' }
 
-    if (data[0].updated_at > local.updatedAt) {
-      return convertResponseDataToObject(data[0])
+    if (data[0].updated_at < local.updatedAt) {
+      return { data: local, error: undefined }
     } else {
-      return local
+      return { data: convertResponseDataToObject(data[0]), error: undefined }
     }
   }
 }
 
-export async function fetchResponseAndPredecessors(quizID) {
-  //This one is going to be the toughest one to do with the API when I add the adaptive retry, I think
+export async function fetchResponses(quizID) {
   const { data, error } = await supabase
     .from('responses')
     .select('*')
@@ -149,24 +140,24 @@ export async function fetchResponseAndPredecessors(quizID) {
 }
 
 export async function createResponse(responseData) {
-  const { data, error } = supabase
+  const { data, error } = await supabase
     .from('responses')
     .insert(prepareInitialResponseData(responseData))
     .select()
 
-  if (error !== null) return { data: false, error: 'There was an error' }
-  localStorage.setItem('response', JSON.stringify(data))
-  return { data: true, error: undefined }
+  if (error !== null) return { data: undefined, error: 'There was an error' }
+  localStorage.setItem('response', JSON.stringify(data[0]))
+  return { data: data[0], error: undefined }
 }
 
 export async function updateResponse(responseData) {
-  const { data, error } = supabase
+  const { data, error } = await supabase
     .from('responses')
     .update(convertResponseForDatabase(responseData))
     .eq('id', responseData.id)
     .select()
 
-  if (error !== null) return { data: false, error: 'There was an error' }
-  localStorage.setItem('response', JSON.stringify(data))
-  return { data: true, error: undefined }
+  if (error !== null) return { data: undefined, error: 'There was an error' }
+  localStorage.setItem('response', JSON.stringify(data[0]))
+  return { data: data[0], error: undefined }
 }

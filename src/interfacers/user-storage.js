@@ -22,12 +22,8 @@ export async function retrieveUser(id) {
 }
 
 export async function updateUser(id, updatedInfo) {
-  const { data, error } = await supabase
-    .from('users')
-    .update({ ...updatedInfo })
-    .eq('id', id)
-    .select()
+  const { data, error } = await supabase.from('users').update(updatedInfo).eq('id', id).select()
 
   if (error !== null) return { data: undefined, error: 'There was an error!' }
-  return { data, error: undefined }
+  return { data: data[0], error: undefined }
 }

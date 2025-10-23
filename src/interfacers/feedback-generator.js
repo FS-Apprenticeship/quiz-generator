@@ -37,10 +37,10 @@ export async function makeFeedback(quizResponse, previousAttempts = []) {
     ...previousAttempts.map((attemptInformation, index) => {
       return {
         role: 'user',
-        content: `This was attempt ${index + 1}, here is my responses: ${attemptInformation}`,
+        content: `This was attempt ${index + 1}, here is my responses: ${JSON.stringify(attemptInformation)}`,
       }
     }),
-    { role: 'user', content: `Here is my current attempt: ${quizResponse}` },
+    { role: 'user', content: `Here is my current attempt: ${JSON.stringify(quizResponse)}` },
   ]
 
   const response = await getLLMResponse({
@@ -84,7 +84,7 @@ const additionResourcesStructure = {
         },
       },
     },
-    required: ['feedback', 'sections_to_review'],
+    required: ['feedback', 'sectionsToReview'],
     additionalProperties: false,
   },
 }
@@ -100,12 +100,12 @@ export async function createAdditionResources(
     ...previousAttempts.map((attemptInformation, index) => {
       return {
         role: 'user',
-        content: `This was attempt ${index + 1}, here is my responses: ${attemptInformation}`,
+        content: `This was attempt ${index + 1}, here is my responses: ${JSON.stringify(attemptInformation)}`,
       }
     }),
-    { role: 'assistant', content: sourceInformation },
-    { role: 'user', content: `Here is my current attempt: ${quizResponse}` },
-    { role: 'assistant', content: `Here is the direct feedback: ${feedback}` },
+    { role: 'assistant', content: JSON.stringify(sourceInformation) },
+    { role: 'user', content: `Here is my current attempt: ${JSON.stringify(quizResponse)}` },
+    { role: 'assistant', content: `Here is the direct feedback: ${JSON.stringify(feedback)}` },
   ]
 
   const response = await getLLMResponse({

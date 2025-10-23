@@ -1,60 +1,71 @@
 <script setup>
-import { useQuizStore } from '@/stores/quiz-store'
 import { useUserStore } from '@/stores/user-store'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const user = useUserStore()
-const quizStore = useQuizStore()
 
-const topic = ref('')
-const time = ref('')
-const level = ref(user.standardLevel ?? '')
-
-const canSubmit = ref(true)
+const userName = ref(user.name)
+const education = ref(user.standardLevel)
 
 async function submit() {
-  if (!topic.value || !time.value || !level.value) return //Just to be safe
-  canSubmit.value = false
-  let success = await quizStore.createQuiz(topic.value, time.value, level.value)
-  canSubmit.value = true
+  const success = await user.updateBoth(education.value, userName.value)
+  if (!success) alert('There was an error!')
+  else router.push('/home')
+}
 
-  if (!success) return
-  router.push(`quiz:${quizStore.quiz.value.id}`)
+async function signOut() {
+  if (await user.signOut()) router.push('/')
 }
 </script>
 
 <template>
   <header>
-    <button class="return" @click="router.back()"><h1>&lt;</h1></button>
-    <h1 class="title">Create a Quiz</h1>
+    <h1>Account</h1>
+    <button @click="router.push('/home')">Quizzes</button>
+    <button @click="signOut()">Sign Out</button>
   </header>
   <form @submit.prevent="submit">
-    <label for="topic">Topic:</label>
-    <input id="topic" type="text" v-model="topic" />
+    <label for="name">Name:</label>
+    <input id="name" type="text" v-model="userName" />
     <br />
-    <label for="time">Time:</label>
-    <input id="time" type="text" v-model="time" />
+    <label for="education">Level of Education:</label>
+    <input id="education" type="text" v-model="education" />
     <br />
-    <label for="level">Level:</label>
-    <input id="level" type="text" v-model="level" />
-    <br />
-    <button type="submit" :disabled="!topic || !time || !level || !canSubmit">Create Quiz</button>
-    <p v-if="!canSubmit">Submitting</p>
+    <button type="submit">Update</button>
   </form>
 </template>
 
 <style scoped>
 header {
-  height: 60px;
+  margin-top: 10px;
+  margin-left: 10px;
   display: flex;
-  align-items: center;
+  flex-wrap: nowrap;
 }
 
-header h1 {
-  margin: 0;
-  background-color: inherit;
+h1 {
+  width: 80%;
+}
+
+h2 {
+  margin: 0 auto;
+  width: fit-content;
+}
+
+header button {
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  width: 9%;
+  margin-right: 1%;
+  border: none;
+  background-color: orange;
+}
+
+header button:hover {
+  background-color: darkorange;
 }
 
 .title {

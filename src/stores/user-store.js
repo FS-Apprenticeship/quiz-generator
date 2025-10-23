@@ -11,6 +11,7 @@ export const useUserStore = defineStore('user', () => {
 
   const id = computed(() => user.value?.id)
   const email = computed(() => user.value?.email)
+  const name = computed(() => userData.value?.user_name)
   const standardLevel = computed(() => userData.value?.standard_level)
 
   async function loadUser() {
@@ -35,7 +36,7 @@ export const useUserStore = defineStore('user', () => {
     const { data, error } = await signInWithEmail(email, password)
     if (error !== undefined) return false
     user.value = data.user
-    session.value = data.value
+    session.value = data.session
     userData.value = await retrieveUser(user.value.id)
 
     if (userData.value === undefined)
@@ -49,7 +50,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function updateLevelOfEducation(newLevel) {
-    const { data, error } = updateUser(id, { standard_level: newLevel })
+    const { data, error } = await updateUser(id, { standard_level: newLevel })
 
     if (error !== undefined) return false
 
@@ -58,9 +59,23 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function updateName(newName) {
-    const { data, error } = updateUser(id, { user_name: newName })
+    const { data, error } = await updateUser(id, { user_name: newName })
 
     if (error !== undefined) return false
+
+    userData.value = data
+    return true
+  }
+
+  async function updateBoth(newLevel, newName) {
+    const { data, error } = await updateUser(id.value, {
+      user_name: newName,
+      standard_level: newLevel,
+    })
+
+    if (error !== undefined) return false
+
+    console.log(data, error)
 
     userData.value = data
     return true
@@ -82,12 +97,14 @@ export const useUserStore = defineStore('user', () => {
     session,
     id,
     email,
+    name,
     standardLevel,
     loadUser,
     signUp,
     signIn,
     updateLevelOfEducation,
     updateName,
+    updateBoth,
     signOut,
   }
 })

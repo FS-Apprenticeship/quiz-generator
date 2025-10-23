@@ -4,32 +4,32 @@ import QuizHolder from '@/components/assessment/QuizHolder.vue'
 import QuizInstance from '@/components/assessment/QuizInstance.vue'
 import SignIn from '@/components/auth/SignIn.vue'
 import SignUp from '@/components/auth/SignUp.vue'
+import StartPage from '@/components/StartPage.vue'
 import HomePage from '@/components/HomePage.vue'
-import UserPage from '@/components/UserPage.vue'
 import { createRouter, createWebHistory } from 'vue-router'
+import AccountPage from '@/components/AccountPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', component: HomePage },
+    { path: '/', component: StartPage },
     { path: '/sign-up', component: SignUp },
     { path: '/sign-in', component: SignIn },
-    { path: '/user', component: UserPage },
+    { path: '/home', component: HomePage },
+    { path: '/account', component: AccountPage },
     {
-      path: '/quiz',
-      component: QuizHolder,
-      children: [
-        {
-          path: '',
-          component: NewQuiz,
-        },
-        {
-          path: ':id',
-          component: QuizInstance,
-          children: [{ path: 'repsonse:responseID', component: FinalAssessment }],
-        },
-      ],
+      path: '/quiz/new',
+      component: NewQuiz,
     },
+    {
+      path: '/quiz/:id',
+      component: QuizHolder,
+    },
+    {
+      path: '/quiz/:id/quiz/:responseID',
+      component: QuizInstance,
+    },
+    { path: '/quiz/:id/response/:responseID', component: FinalAssessment },
   ],
 })
 

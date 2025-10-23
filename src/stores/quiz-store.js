@@ -1,10 +1,11 @@
 import {
   createResponse as storeResponse,
-  fetchMostRecentResponse,
   fetchQuiz,
   fetchQuizzes,
   storeQuiz,
   updateResponse as updateResponseInDB,
+  fetchResponse,
+  fetchResponses,
 } from '@/interfacers/quiz-storage'
 import { useUserStore } from './user-store'
 import { defineStore } from 'pinia'
@@ -16,6 +17,7 @@ export const useQuizStore = defineStore('quiz', () => {
   const user = useUserStore()
   const quizzes = ref([])
   const quiz = ref(undefined)
+  const responses = ref([])
   const response = ref(undefined)
 
   async function createQuiz(topic, time, level) {
@@ -49,10 +51,10 @@ export const useQuizStore = defineStore('quiz', () => {
     return true
   }
 
-  async function createResponse(previousResponse = null) {
+  async function createResponse() {
     const responseData = {
       quizID: quiz.value.id,
-      basedOn: previousResponse,
+      basedOn: null,
       answers: quiz.value.questions.map((question) => {
         return { id: question.id, answer: null, updatesToAnswer: 0, correct: null }
       }),
@@ -74,11 +76,23 @@ export const useQuizStore = defineStore('quiz', () => {
     if (user.id === undefined) return false
     const { data, error } = await fetchQuizzes(user.id)
     if (error !== undefined) return false
+    data.sort((a, b) => a.created_at < b.created_at)
     quizzes.value = data
     return true
   }
 
+  async function getResponses() {
+    console.log('Fetching Responses')
+    if (quiz.value?.id === undefined) return false
+    const { data, error } = await fetchResponses(quiz.value.id)
+    if (error !== undefined) return false
+    data.sort((a, b) => a.createdAt < b.createdAt)
+    responses.value = data
+    return true
+  }
+
   watch(user, getQuizzes)
+  watch(quiz, getResponses)
 
   async function getQuiz(quizID) {
     if (quiz.value?.id === quizID) return true
@@ -87,29 +101,30 @@ export const useQuizStore = defineStore('quiz', () => {
     if (error !== undefined) return false
     quiz.value = data
 
-    let hasResponse = await getResponse()
-    while (!hasResponse) {
-      hasResponse = await createResponse()
-    }
+    return true
+  }
+
+  async function getResponse(quizID, responseID) {
+    const { data: quizData, error: quizError } = await fetchQuiz(user.id, quizID)
+    const { data: responseData, error: responseError } = await fetchResponse(quizID, responseID)
+
+    if (quizError !== undefined) return false
+    if (responseError !== undefined) return false
+    response.value = responseData
+    quiz.value = quizData
 
     return true
   }
-  async function getResponse() {
-    const { data, error } = await fetchMostRecentResponse(quiz.value.id)
-    if (error !== undefined) return false
 
-    response.value = data
-    return true
-  }
   async function updateResponse(questionID, answer) {
     if (response.value.completed) return false
     const answerToChange = response.value.answers.find((answer) => answer.id === questionID)
     answerToChange.answer = answer
-    answerToChange.correct = quiz.value.questions[answer.id].correct_answer === answer
+    answerToChange.correct = quiz.value.questions[answerToChange.id].correct_answer === answer
     answerToChange.updatesToAnswer++
     response.value.updatedAt = new Date()
 
-    const { data, error } = updateResponseInDB(response.value)
+    const { data, error } = await updateResponseInDB(response.value)
     if (error) return false
     response.value = data
     return true
@@ -129,7 +144,7 @@ export const useQuizStore = defineStore('quiz', () => {
         ) / answers.length
 
       const interleavedAnswersForLLM = []
-      for (const answer in answers) {
+      for (const answer of answers) {
         const question = quiz.value.questions[answer.id]
         interleavedAnswersForLLM.push({
           question: question.question,
@@ -141,8 +156,8 @@ export const useQuizStore = defineStore('quiz', () => {
       }
 
       //Both of this should have previous answers fed in at a later point
-      const feedback = makeFeedback(interleavedAnswersForLLM)
-      const additionalResources = createAdditionResources(
+      const feedback = await makeFeedback(interleavedAnswersForLLM)
+      const additionalResources = await createAdditionResources(
         quiz.value.topicInformation,
         interleavedAnswersForLLM,
         feedback,
@@ -154,7 +169,7 @@ export const useQuizStore = defineStore('quiz', () => {
       responseValue.feedback = feedback
       responseValue.resources = additionalResources
 
-      const { data, error } = updateResponseInDB(responseValue)
+      const { data, error } = await updateResponseInDB(responseValue)
       if (error) throw new Error('DB Error')
       response.value = data
       return true
@@ -164,7 +179,29 @@ export const useQuizStore = defineStore('quiz', () => {
     }
   }
   async function retryMissedQuestions() {
-    //Need Feedback merge
+    if (!response.value.completed) return false
+    const incorrectAnswers = response.value.answers.filter((answer) => !answer.correct)
+
+    if (incorrectAnswers.length === 0) return false
+
+    const responseData = {
+      quizID: quiz.value.id,
+      basedOn: response.value.id,
+      answers: incorrectAnswers.map((answer) => {
+        return { id: answer.id, answer: null, updatesToAnswer: 0, correct: null }
+      }),
+    }
+
+    const { data, error } = await storeResponse(responseData)
+
+    if (error === undefined) {
+      // alert(error)
+      return false
+    }
+
+    response.value = data
+
+    return true
   }
   async function adaptiveRetry() {
     //Not yet
@@ -174,11 +211,13 @@ export const useQuizStore = defineStore('quiz', () => {
     quizzes,
     quiz,
     response,
+    responses,
     createQuiz,
     createResponse,
     getQuizzes,
     getQuiz,
     getResponse,
+    getResponses,
     updateResponse,
     completeQuizAndGetFeedback,
     retryMissedQuestions,
