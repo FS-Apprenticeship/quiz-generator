@@ -15,7 +15,10 @@ const randomTopic = ref(listOfThings[Math.floor(Math.random() * listOfThings.len
   </header>
   <main>
     <h1>Welcome to the Quiz Generator</h1>
-    <h1>Take a quiz on {{ randomTopic }}</h1>
+    <h1>
+      Take a quiz on
+      <span style="color: orange">{{ randomTopic }}</span>
+    </h1>
     <button class="rounded" @click="router.push('/sign-up')">Sign Up</button>
   </main>
 </template>
