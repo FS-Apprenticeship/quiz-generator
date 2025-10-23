@@ -10,7 +10,7 @@ const router = useRouter()
 const resolved = ref(false)
 const quizExists = ref(true)
 
-quizStore.getSpecificResponse(route.params.id, route.params.responseID).then((success) => {
+quizStore.getResponse(route.params.id, route.params.responseID).then((success) => {
   resolved.value = true
   quizExists.value = success
 })

@@ -1,11 +1,11 @@
 import {
   createResponse as storeResponse,
-  fetchMostRecentResponse,
   fetchQuiz,
   fetchQuizzes,
   storeQuiz,
   updateResponse as updateResponseInDB,
   fetchResponse,
+  fetchResponses,
 } from '@/interfacers/quiz-storage'
 import { useUserStore } from './user-store'
 import { defineStore } from 'pinia'
@@ -17,6 +17,7 @@ export const useQuizStore = defineStore('quiz', () => {
   const user = useUserStore()
   const quizzes = ref([])
   const quiz = ref(undefined)
+  const responses = ref([])
   const response = ref(undefined)
 
   async function createQuiz(topic, time, level) {
@@ -80,7 +81,18 @@ export const useQuizStore = defineStore('quiz', () => {
     return true
   }
 
+  async function getResponses() {
+    console.log('Fetching Responses')
+    if (quiz.value?.id === undefined) return false
+    const { data, error } = await fetchResponses(quiz.value.id)
+    if (error !== undefined) return false
+    data.sort((a, b) => a.createdAt < b.createdAt)
+    responses.value = data
+    return true
+  }
+
   watch(user, getQuizzes)
+  watch(quiz, getResponses)
 
   async function getQuiz(quizID) {
     if (quiz.value?.id === quizID) return true
@@ -89,15 +101,10 @@ export const useQuizStore = defineStore('quiz', () => {
     if (error !== undefined) return false
     quiz.value = data
 
-    let hasResponse = await getResponse()
-    while (!hasResponse) {
-      hasResponse = await createResponse()
-    }
-
     return true
   }
 
-  async function getSpecificResponse(quizID, responseID) {
+  async function getResponse(quizID, responseID) {
     const { data: quizData, error: quizError } = await fetchQuiz(user.id, quizID)
     const { data: responseData, error: responseError } = await fetchResponse(quizID, responseID)
 
@@ -109,14 +116,6 @@ export const useQuizStore = defineStore('quiz', () => {
     return true
   }
 
-  async function getResponse() {
-    const { data, error } = await fetchMostRecentResponse(quiz.value.id)
-    if (error !== undefined) return false
-    if (data === undefined) return false
-
-    response.value = data
-    return true
-  }
   async function updateResponse(questionID, answer) {
     if (response.value.completed) return false
     const answerToChange = response.value.answers.find((answer) => answer.id === questionID)
@@ -212,12 +211,13 @@ export const useQuizStore = defineStore('quiz', () => {
     quizzes,
     quiz,
     response,
+    responses,
     createQuiz,
     createResponse,
     getQuizzes,
     getQuiz,
-    getSpecificResponse,
     getResponse,
+    getResponses,
     updateResponse,
     completeQuizAndGetFeedback,
     retryMissedQuestions,

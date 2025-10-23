@@ -24,7 +24,7 @@ async function signOut() {
   <h2>Your Quizzes</h2>
   <br />
   <ul>
-    <li><button @click="$router.push('quiz')">New Quiz</button></li>
+    <li><button @click="$router.push('quiz/new')">New Quiz</button></li>
     <QuizCard v-for="quiz in quizStore.quizzes" :key="quiz.id" :quiz="quiz" />
   </ul>
 </template>

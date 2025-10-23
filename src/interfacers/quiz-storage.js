@@ -106,14 +106,6 @@ function convertResponseForDatabase(responseData) {
   }
 }
 
-export async function fetchMostRecentResponse(quizID) {
-  // const local = JSON.parse(localStorage.getItem('response') ?? '') Will figure out how I want to handle this
-  const { data, error } = await fetchResponseAndPredecessors(quizID)
-
-  if (error !== undefined) return { data, error }
-  return { data: data[0], error }
-}
-
 export async function fetchResponse(quizID, responseID, allowLocal = true) {
   const local = JSON.parse(localStorage.getItem('response') ?? '')
 
@@ -136,8 +128,7 @@ export async function fetchResponse(quizID, responseID, allowLocal = true) {
   }
 }
 
-export async function fetchResponseAndPredecessors(quizID) {
-  //This one is going to be the toughest one to do with the API when I add the adaptive retry, I think
+export async function fetchResponses(quizID) {
   const { data, error } = await supabase
     .from('responses')
     .select('*')

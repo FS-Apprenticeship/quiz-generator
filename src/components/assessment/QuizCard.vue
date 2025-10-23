@@ -1,5 +1,5 @@
 <script setup>
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 defineProps({
   quiz: {
     type: {
@@ -10,16 +10,11 @@ defineProps({
   },
 })
 
-const route = useRoute()
 const router = useRouter()
 </script>
 
 <template>
-  <li
-    class="quiz"
-    @click="router.push(`/quiz/${quiz.id}`)"
-    :class="route.params.id === quiz.id ? 'selected' : ''"
-  >
+  <li class="quiz" @click="router.push(`/quiz/${quiz.id}/`)">
     <h3>{{ quiz.topic }}</h3>
   </li>
 </template>

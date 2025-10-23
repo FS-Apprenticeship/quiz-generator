@@ -16,20 +16,18 @@ const router = createRouter({
     { path: '/sign-in', component: SignIn },
     { path: '/home', component: HomePage },
     {
-      path: '/quiz',
-      component: QuizHolder,
-      children: [
-        {
-          path: '',
-          component: NewQuiz,
-        },
-        {
-          path: ':id',
-          component: QuizInstance,
-        },
-        { path: ':id/response/:responseID', component: FinalAssessment },
-      ],
+      path: '/quiz/new',
+      component: NewQuiz,
     },
+    {
+      path: '/quiz/:id',
+      component: QuizHolder,
+    },
+    {
+      path: '/quiz/:id/quiz/:responseID',
+      component: QuizInstance,
+    },
+    { path: '/quiz/:id/response/:responseID', component: FinalAssessment },
   ],
 })
 
