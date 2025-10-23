@@ -1,7 +1,12 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 
 const router = useRouter()
+
+const listOfThings = ['Programming', 'Quiz Making', 'Math', 'Anything']
+
+const randomTopic = ref(listOfThings[Math.floor(Math.random() * listOfThings.length)])
 </script>
 
 <template>
@@ -10,7 +15,7 @@ const router = useRouter()
   </header>
   <main>
     <h1>Welcome to the Quiz Generator</h1>
-    <h1>Take a quiz on [REPLACE WITH TOPIC]</h1>
+    <h1>Take a quiz on {{ randomTopic }}</h1>
     <button class="rounded" @click="router.push('/sign-up')">Sign Up</button>
   </main>
 </template>
