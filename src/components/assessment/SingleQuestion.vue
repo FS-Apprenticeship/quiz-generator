@@ -19,7 +19,10 @@ const answers = computed(() => {
   return answers
 })
 
+console.log(response)
+
 async function updateAnswer(answer) {
+  console.log('This isn`t getting called for unknown reasons')
   const success = await quizStore.updateResponse(question.id, answer)
   if (!success) alert('There was an issue saving your answer')
 }
@@ -28,15 +31,15 @@ async function updateAnswer(answer) {
 <template>
   <h3>{{ question.question }}</h3>
 
-  <template v-for="answer in answers" :key="answer">
+  <template v-for="answer in answers" :key="answer.answerText">
     <input
       type="radio"
       name="answer"
-      :id="answer"
-      :checked="answer === response.answer"
-      @click="() => updateAnswer(answer)"
+      :id="answer.answerText"
+      :checked="answer.answerText === response.answer"
+      @click="updateAnswer(answer.answerText)"
     />
-    <label :for="answer">{{ answer }}</label>
+    <label :for="answer.answerText">{{ answer.answerText }}</label>
     <br />
   </template>
 </template>

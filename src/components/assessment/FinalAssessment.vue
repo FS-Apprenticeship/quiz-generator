@@ -59,7 +59,7 @@ async function retry() {
     <main>
       <div v-for="response in responsesToQuestions" :key="response.question.id">
         <h3>{{ response.question.question }}</h3>
-        <p>Correct Answer: {{ response.question.correct_answer }}</p>
+        <p>Correct Answer: {{ response.question.correct_answer.answerText }}</p>
         <p>Your Answer: {{ response.userAnswer }}</p>
         <h4>Feedback:</h4>
         <p>{{ response.feedback }}</p>
@@ -68,8 +68,8 @@ async function retry() {
         <h2>Recommended Resources:</h2>
         {{ response?.resources.feedback ?? 'Loading' }}
         <div v-for="id in response.resources.sectionsToReview ?? []" :key="id">
-          {{ quiz.topicInformation.sections[id].title }}
-          <p>{{ quiz.topicInformation.sections[id].information }}</p>
+          {{ quiz.topicInformation.sections[id]?.title }}
+          <p>{{ quiz.topicInformation.sections[id]?.information }}</p>
         </div>
       </div>
       <div class="buttons">

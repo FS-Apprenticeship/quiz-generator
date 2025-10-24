@@ -32,6 +32,7 @@ export const useQuizStore = defineStore('quiz', () => {
       const quizData = {
         topic,
         level,
+        time,
         topicInformation: information,
         questions: quizQuestions,
         userID: user.id,
@@ -120,7 +121,8 @@ export const useQuizStore = defineStore('quiz', () => {
     if (response.value.completed) return false
     const answerToChange = response.value.answers.find((answer) => answer.id === questionID)
     answerToChange.answer = answer
-    answerToChange.correct = quiz.value.questions[answerToChange.id].correct_answer === answer
+    answerToChange.correct =
+      quiz.value.questions[answerToChange.id].correct_answer.answerText === answer
     answerToChange.updatesToAnswer++
     response.value.updatedAt = new Date()
 
@@ -138,25 +140,38 @@ export const useQuizStore = defineStore('quiz', () => {
       if (!confirmAnswered) throw new Error("Hasn't answered all questions")
 
       const score =
-        answers.reduce(
+        (answers.reduce(
           (accumulator, answer) => (answer.correct ? accumulator + 1 : accumulator),
           0,
-        ) / answers.length
+        ) *
+          100) /
+        answers.length
 
       const interleavedAnswersForLLM = []
+      const feedback = []
       for (const answer of answers) {
         const question = quiz.value.questions[answer.id]
+        const answerChoices = [question.correct_answer, ...question.fake_answers]
+
         interleavedAnswersForLLM.push({
           question: question.question,
           aboutQuestion: question.explanation,
-          correctAnswer: question.correct_answer,
+          correctAnswer: question.correct_answer.answerText,
           user_answer: answer,
-          fakeAnswers: question.fake_answers,
+          fakeAnswers: question.fake_answers.map((answer) => answer.answerText),
+        })
+
+        feedback.push({
+          questionID: question.id,
+          feedback:
+            answerChoices.find((choice) => choice.answerText === answer.answer)?.feedback ??
+            'Feedback Lost',
         })
       }
 
       //Both of this should have previous answers fed in at a later point
-      const feedback = await makeFeedback(interleavedAnswersForLLM)
+      // const feedback = await makeFeedback(interleavedAnswersForLLM)
+
       const additionalResources = await createAdditionResources(
         quiz.value.topicInformation,
         interleavedAnswersForLLM,

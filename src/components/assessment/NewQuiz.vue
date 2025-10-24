@@ -21,7 +21,7 @@ async function submit() {
   canSubmit.value = true
 
   if (!success) return
-  router.push(`quiz:${quizStore.quiz.value.id}`)
+  router.push(`quiz:${quizStore.quiz.id}`)
 }
 </script>
 
