@@ -62,7 +62,7 @@ export const useQuizStore = defineStore('quiz', () => {
 
     const { data, error } = await storeResponse(responseData)
 
-    if (error === undefined) {
+    if (error !== undefined) {
       // alert(error)
       return false
     }
@@ -194,7 +194,7 @@ export const useQuizStore = defineStore('quiz', () => {
 
     const { data, error } = await storeResponse(responseData)
 
-    if (error === undefined) {
+    if (error !== undefined) {
       // alert(error)
       return false
     }
