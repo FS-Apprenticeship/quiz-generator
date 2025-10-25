@@ -10,7 +10,7 @@ import {
 import { useUserStore } from './user-store'
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
-import { buildQuiz, buildSourceInformation } from '@/interfacers/quiz-builder'
+import { buildQuiz, buildRetryQuiz, buildSourceInformation } from '@/interfacers/quiz-builder'
 import { createAdditionResources } from '@/interfacers/feedback-generator'
 
 export const useQuizStore = defineStore('quiz', () => {
@@ -219,7 +219,55 @@ export const useQuizStore = defineStore('quiz', () => {
     return true
   }
   async function adaptiveRetry() {
-    //Not yet
+    if (!response.value.completed) return false
+    const incorrectAnswers = response.value.answers.filter((answer) => !answer.correct)
+
+    if (incorrectAnswers.length === 0) return false
+
+    try {
+      const quizQuestions = await buildRetryQuiz(incorrectAnswers, quiz.value.information)
+
+      quizQuestions.forEach((question, index) => {
+        question.id = index
+      })
+
+      const quizData = {
+        topic: quiz.value.topic,
+        level: quiz.value.level,
+        time: quiz.value.time,
+        basedOn: quiz.value.id,
+        topicInformation: quiz.value.information,
+        questions: quizQuestions,
+        userID: user.id,
+      }
+
+      const { data, error } = await storeQuiz(quizData)
+
+      if (error) throw new Error(error)
+
+      quiz.value = data
+
+      const responseInfo = {
+        quizID: quiz.value.id,
+        basedOn: response.value.id,
+        answers: quiz.value.questions.map((question) => {
+          return { id: question.id, answer: null, updatesToAnswer: 0, correct: null }
+        }),
+      }
+
+      const { data: responseData, error: responseError } = await storeResponse(responseInfo)
+
+      if (responseError !== undefined) {
+        throw new Error(responseError)
+      }
+
+      response.value = responseData
+
+      return true
+    } catch (e) {
+      alert(e)
+      return false
+    }
   }
 
   return {
