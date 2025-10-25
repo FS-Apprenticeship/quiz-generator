@@ -22,7 +22,6 @@ const answers = computed(() => {
 console.log(response)
 
 async function updateAnswer(answer) {
-  console.log('This isn`t getting called for unknown reasons')
   const success = await quizStore.updateResponse(question.id, answer)
   if (!success) alert('There was an issue saving your answer')
 }
@@ -52,6 +51,8 @@ h3 {
   color: #fff;
   margin-bottom: 20px;
   text-align: center; /* Center the question text */
+  width: 70%;
+  margin: 0 auto;
 }
 
 /* Styling for the radio input and label */

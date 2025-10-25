@@ -49,6 +49,16 @@ async function retry() {
 
   router.push(`/quiz/${quiz.value.id}`)
 }
+
+async function adaptiveRetry() {
+  const success = await quizStore.adaptiveRetry()
+
+  if (!success) {
+    alert('There was an error in retrying')
+  }
+
+  router.push(`/quiz/${quiz.value.id}`)
+}
 </script>
 
 <template>
@@ -79,6 +89,7 @@ async function retry() {
     <div class="buttons">
       <button @click="$router.push(`/quiz/${quiz.id}`)">Go Back!</button>
       <button :disabled="perfectScore" @click="retry">Retry Missed Questions</button>
+      <button :disabled="perfectScore" @click="adaptiveRetry">Adaptive Retry</button>
     </div>
   </template>
   <template v-else-if="resolved">

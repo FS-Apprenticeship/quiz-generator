@@ -149,7 +149,7 @@ export async function buildSourceInformation(topic, time, grade) {
   const response = await getLLMResponse({
     model: 'gpt-4o-mini',
     input: inputs,
-    text: { format: sourceInformationStructure(5) },
+    text: { format: sourceInformationStructure },
   })
 
   if (response === false) {
@@ -184,7 +184,7 @@ export async function buildQuiz(topic, time, grade, information) {
   const response = await getLLMResponse({
     model: 'gpt-4o-mini',
     input: inputs,
-    text: { format: quizInformationStructure },
+    text: { format: quizInformationStructure(5) },
   })
 
   if (response === false) {
