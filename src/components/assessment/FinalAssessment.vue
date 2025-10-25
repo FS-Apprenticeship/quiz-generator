@@ -54,15 +54,18 @@ async function retry() {
 <template>
   <template v-if="resolved && quizExists">
     <header>
-      <h1>{{ quiz?.topic }}</h1>
+      <h1>{{ quiz?.topic }} - {{ response?.finalScore }}%</h1>
     </header>
     <main>
       <div v-for="response in responsesToQuestions" :key="response.question.id">
         <h3>{{ response.question.question }}</h3>
-        <p>Correct Answer: {{ response.question.correct_answer.answerText }}</p>
-        <p>Your Answer: {{ response.userAnswer }}</p>
+        <template v-if="!response.correct">
+          Correct Answer: {{ response.question.correct_answer.answerText }}
+        </template>
+        Your Answer: {{ response.userAnswer }}
         <h4>Feedback:</h4>
-        <p>{{ response.feedback }}</p>
+        {{ response.feedback }}
+        <hr />
       </div>
       <div>
         <h2>Recommended Resources:</h2>
@@ -72,11 +75,11 @@ async function retry() {
           <p>{{ quiz.topicInformation.sections[id]?.information }}</p>
         </div>
       </div>
-      <div class="buttons">
-        <button @click="$router.push(`/quiz/${quiz.id}`)">Go Back!</button>
-        <button :disabled="perfectScore" @click="retry">Retry Missed Questions</button>
-      </div>
     </main>
+    <div class="buttons">
+      <button @click="$router.push(`/quiz/${quiz.id}`)">Go Back!</button>
+      <button :disabled="perfectScore" @click="retry">Retry Missed Questions</button>
+    </div>
   </template>
   <template v-else-if="resolved">
     <h1>QUIZ DOESN'T EXIST</h1>
@@ -130,9 +133,11 @@ header button:hover {
 
 /* Quiz Questions and Feedback Section */
 main {
-  margin: 20px 10px;
+  margin: 20px 20%;
   display: flex;
   flex-direction: column;
+  align-self: center;
+  width: 60%;
 }
 
 h3 {
@@ -146,6 +151,7 @@ h4 {
   font-size: 1rem;
   font-weight: 600;
   color: #ccc;
+  margin-top: 10px;
 }
 
 div {
@@ -157,6 +163,12 @@ p {
   font-size: 1rem;
   color: #fff;
   margin-top: 5px;
+}
+
+hr {
+  width: 75%;
+  margin-left: 12.5%;
+  margin-bottom: 30px;
 }
 
 /* Resources Section */
