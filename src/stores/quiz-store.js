@@ -11,7 +11,7 @@ import { useUserStore } from './user-store'
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { buildQuiz, buildSourceInformation } from '@/interfacers/quiz-builder'
-import { createAdditionResources, makeFeedback } from '@/interfacers/feedback-generator'
+import { createAdditionResources } from '@/interfacers/feedback-generator'
 
 export const useQuizStore = defineStore('quiz', () => {
   const user = useUserStore()
