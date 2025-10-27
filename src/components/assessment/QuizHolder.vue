@@ -23,7 +23,7 @@ async function signOut() {
     <button @click="router.push('/home')">Quizzes</button>
     <button @click="signOut()">Sign Out</button>
   </header>
-  <h2>Your Responses to your quiz on {{ quizStore.quiz.topic }}</h2>
+  <h2>Your Responses to your quiz on {{ quizStore.quiz?.topic }}</h2>
   <br />
   <ul>
     <ResponseCard

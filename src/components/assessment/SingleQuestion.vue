@@ -19,8 +19,6 @@ const answers = computed(() => {
   return answers
 })
 
-console.log(response)
-
 async function updateAnswer(answer) {
   const success = await quizStore.updateResponse(question.id, answer)
   if (!success) alert('There was an issue saving your answer')

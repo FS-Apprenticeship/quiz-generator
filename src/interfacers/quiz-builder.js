@@ -43,7 +43,7 @@ Thanks for all the hard work! Do your best!`
 
 const adaptiveRetryPrompt = `
 You are the very useful quiz building LLM.
-You are going to be fed a user's previous quiz and the answers they got wrong, and you will make one that should reach an appropriate level of difficulty based on the original question. You will also be informed of how many times they’ve tried the original quiz. You will keep language appropriate for the user's attained level of education. You will make sure that the questions are not trivially easy. They should be difficult, though not to the point that a user who knows the topic well would miss any questions.
+You are going to be fed a user's previous quiz and the answers they got wrong. Your questions will be directly based on those missed questions, but you should change them so that it isn't just repeating the same question over and over again. You will keep language appropriate for the user's attained level of education. You will make sure that the questions are not trivially easy. They should be difficult, though not to the point that a user who knows the topic well would miss any questions.
 
 You should focus your questions using the Bloom's Taxonomy levels of the original questions. They should also keep the questions in line with the originals. These are meant to ensure that the user cannot immediately say the exact same answer, but must still be on the same specific topic. So do not make it an unrelated question
 
@@ -177,7 +177,7 @@ export async function buildQuiz(topic, time, grade, information) {
     },
     {
       role: 'assistant',
-      content: `Here is the information that the user is expected to know: ${information}, ensure the quiz tests this information`,
+      content: `Here is the information that the user is expected to know: ${JSON.stringify(information)}, ensure the quiz tests this information`,
     },
   ]
 
@@ -195,26 +195,31 @@ export async function buildQuiz(topic, time, grade, information) {
     throw new Error(`The model refused due to ${response.refusal}`)
   }
 
-  return JSON.parse(response.output_text).questions
+  try {
+    return JSON.parse(response.output_text).questions
+  } catch {
+    console.log(response)
+    throw Error('Parsing failure')
+  }
 }
 
-export async function buildRetryQuiz(missed_questions, information) {
+export async function buildRetryQuiz(missedQuestions, information) {
   const inputs = [
     { role: 'developer', content: adaptiveRetryPrompt },
     {
       role: 'user',
-      content: `Here are the questions I missed: ${missed_questions}`,
+      content: `Here are the questions I missed: ${JSON.stringify(missedQuestions)}`,
     },
     {
       role: 'assistant',
-      content: `Here is the information that the user is expected to know: ${information}, ensure the quiz tests this information`,
+      content: `Here is the information that the user is expected to know: ${JSON.stringify(information)}, ensure the quiz tests this information`,
     },
   ]
 
   const response = await getLLMResponse({
     model: 'gpt-4o-mini',
     input: inputs,
-    text: { format: quizInformationStructure(missed_questions.length) },
+    text: { format: quizInformationStructure(missedQuestions.length) },
   })
 
   if (response === false) {
@@ -225,5 +230,10 @@ export async function buildRetryQuiz(missed_questions, information) {
     throw new Error(`The model refused due to ${response.refusal}`)
   }
 
-  return JSON.parse(response.output_text).questions
+  try {
+    return JSON.parse(response.output_text).questions
+  } catch {
+    console.log(response)
+    throw Error('Parsing failure')
+  }
 }
