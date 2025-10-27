@@ -20,9 +20,13 @@ export const useQuizStore = defineStore('quiz', () => {
   const responses = ref([])
   const response = ref(undefined)
 
+  const state = ref('')
+
   async function createQuiz(topic, time, level) {
     try {
+      state.value = 'Building Source Information'
       const information = await buildSourceInformation(topic, time, level)
+      state.value = 'Building Quiz'
       const quizQuestions = await buildQuiz(topic, time, level, information)
 
       quizQuestions.forEach((question, index) => {
@@ -38,12 +42,14 @@ export const useQuizStore = defineStore('quiz', () => {
         userID: user.id,
       }
 
+      state.value = 'Storing Quiz'
       const { data, error } = await storeQuiz(quizData)
 
       if (error) throw new Error(error)
 
       quiz.value = data
 
+      state.value = 'Creating Response'
       await createResponse()
     } catch (e) {
       alert(e)
@@ -83,7 +89,6 @@ export const useQuizStore = defineStore('quiz', () => {
   }
 
   async function getResponses() {
-    console.log('Fetching Responses')
     if (quiz.value?.id === undefined) return false
     const { data, error } = await fetchResponses(quiz.value.id)
     if (error !== undefined) return false
@@ -224,8 +229,34 @@ export const useQuizStore = defineStore('quiz', () => {
 
     if (incorrectAnswers.length === 0) return false
 
+    const interleavedAnswersForLLM = []
+    const feedback = []
+    for (const answer of incorrectAnswers) {
+      const question = quiz.value.questions[answer.id]
+      const answerChoices = [question.correct_answer, ...question.fake_answers]
+
+      interleavedAnswersForLLM.push({
+        question: question.question,
+        aboutQuestion: question.explanation,
+        correctAnswer: question.correct_answer.answerText,
+        user_answer: answer,
+        fakeAnswers: question.fake_answers.map((answer) => answer.answerText),
+      })
+
+      feedback.push({
+        questionID: question.id,
+        feedback:
+          answerChoices.find((choice) => choice.answerText === answer.answer)?.feedback ??
+          'Feedback Lost',
+      })
+    }
+
     try {
-      const quizQuestions = await buildRetryQuiz(incorrectAnswers, quiz.value.information)
+      state.value = 'Building Quiz'
+      const quizQuestions = await buildRetryQuiz(
+        interleavedAnswersForLLM,
+        quiz.value.topicInformation,
+      )
 
       quizQuestions.forEach((question, index) => {
         question.id = index
@@ -236,11 +267,12 @@ export const useQuizStore = defineStore('quiz', () => {
         level: quiz.value.level,
         time: quiz.value.time,
         basedOn: quiz.value.id,
-        topicInformation: quiz.value.information,
+        topicInformation: quiz.value.topicInformation,
         questions: quizQuestions,
         userID: user.id,
       }
 
+      state.value = 'Storing Quiz'
       const { data, error } = await storeQuiz(quizData)
 
       if (error) throw new Error(error)
@@ -255,6 +287,7 @@ export const useQuizStore = defineStore('quiz', () => {
         }),
       }
 
+      state.value = 'Generating Response'
       const { data: responseData, error: responseError } = await storeResponse(responseInfo)
 
       if (responseError !== undefined) {
@@ -275,6 +308,7 @@ export const useQuizStore = defineStore('quiz', () => {
     quiz,
     response,
     responses,
+    state,
     createQuiz,
     createResponse,
     getQuizzes,
