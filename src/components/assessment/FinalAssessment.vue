@@ -9,6 +9,7 @@ const router = useRouter()
 
 const resolved = ref(false)
 const quizExists = ref(true)
+const generatingQuiz = ref(false)
 
 quizStore.getResponse(route.params.id, route.params.responseID).then((success) => {
   resolved.value = true
@@ -51,7 +52,9 @@ async function retry() {
 }
 
 async function adaptiveRetry() {
+  generatingQuiz.value = true
   const success = await quizStore.adaptiveRetry()
+  generatingQuiz.value = false
 
   if (!success) {
     alert('There was an error in retrying')
@@ -89,7 +92,10 @@ async function adaptiveRetry() {
     <div class="buttons">
       <button @click="$router.push(`/quiz/${quiz.id}`)">Go Back!</button>
       <button :disabled="perfectScore" @click="retry">Retry Missed Questions</button>
-      <button :disabled="perfectScore" @click="adaptiveRetry">Adaptive Retry</button>
+      <button :disabled="perfectScore || generatingQuiz" @click="adaptiveRetry">
+        <template v-if="!generatingQuiz">Adaptive Retry</template>
+        <template v-else>{{ quizStore.state }}</template>
+      </button>
     </div>
   </template>
   <template v-else-if="resolved">
@@ -200,7 +206,7 @@ h2 {
 .buttons {
   margin-left: auto;
   margin-right: auto;
-  width: 50%;
+  width: 80%;
 }
 
 button {
