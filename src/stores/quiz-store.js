@@ -44,6 +44,11 @@ export const useQuizStore = defineStore('quiz', () => {
 
       state.value = 'Storing Quiz'
       const { data, error } = await storeQuiz(quizData)
+      quizzes.value.unshift({
+        id: data.id,
+        topic: data.topic,
+        created_at: data.createdAt,
+      })
 
       if (error) throw new Error(error)
 
@@ -274,6 +279,12 @@ export const useQuizStore = defineStore('quiz', () => {
 
       state.value = 'Storing Quiz'
       const { data, error } = await storeQuiz(quizData)
+
+      quizzes.value.unshift({
+        id: data.id,
+        topic: data.topic,
+        created_at: data.createdAt,
+      })
 
       if (error) throw new Error(error)
 
