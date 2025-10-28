@@ -67,6 +67,10 @@ async function retry() {
       <div>
         <h2>Recommended Resources:</h2>
         {{ response?.resources.feedback ?? 'Loading' }}
+        <div v-for="id in response.resources.sectionsToReview ?? []" :key="id">
+          {{ quiz.topicInformation.sections[id].title }}
+          <p>{{ quiz.topicInformation.sections[id].information }}</p>
+        </div>
       </div>
       <div class="buttons">
         <button @click="$router.push(`/quiz/${quiz.id}`)">Go Back!</button>
