@@ -21,7 +21,7 @@ async function submit() {
   canSubmit.value = true
 
   if (!success) return
-  router.push(`quiz:${quizStore.quiz.value.id}`)
+  router.push(`quiz:${quizStore.quiz.id}`)
 }
 </script>
 
@@ -41,7 +41,7 @@ async function submit() {
     <input id="level" type="text" v-model="level" />
     <br />
     <button type="submit" :disabled="!topic || !time || !level || !canSubmit">Create Quiz</button>
-    <p v-if="!canSubmit">Submitting</p>
+    <p v-if="!canSubmit">{{ quizStore.state }}</p>
   </form>
 </template>
 

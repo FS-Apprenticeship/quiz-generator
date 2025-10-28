@@ -10,8 +10,8 @@ import {
 import { useUserStore } from './user-store'
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
-import { buildQuiz, buildSourceInformation } from '@/interfacers/quiz-builder'
-import { createAdditionResources, makeFeedback } from '@/interfacers/feedback-generator'
+import { buildQuiz, buildRetryQuiz, buildSourceInformation } from '@/interfacers/quiz-builder'
+import { createAdditionResources } from '@/interfacers/feedback-generator'
 
 export const useQuizStore = defineStore('quiz', () => {
   const user = useUserStore()
@@ -20,9 +20,13 @@ export const useQuizStore = defineStore('quiz', () => {
   const responses = ref([])
   const response = ref(undefined)
 
+  const state = ref('')
+
   async function createQuiz(topic, time, level) {
     try {
+      state.value = 'Building Source Information'
       const information = await buildSourceInformation(topic, time, level)
+      state.value = 'Building Quiz'
       const quizQuestions = await buildQuiz(topic, time, level, information)
 
       quizQuestions.forEach((question, index) => {
@@ -32,17 +36,25 @@ export const useQuizStore = defineStore('quiz', () => {
       const quizData = {
         topic,
         level,
+        time,
         topicInformation: information,
         questions: quizQuestions,
         userID: user.id,
       }
 
+      state.value = 'Storing Quiz'
       const { data, error } = await storeQuiz(quizData)
+      quizzes.value.unshift({
+        id: data.id,
+        topic: data.topic,
+        created_at: data.createdAt,
+      })
 
       if (error) throw new Error(error)
 
       quiz.value = data
 
+      state.value = 'Creating Response'
       await createResponse()
     } catch (e) {
       alert(e)
@@ -62,7 +74,7 @@ export const useQuizStore = defineStore('quiz', () => {
 
     const { data, error } = await storeResponse(responseData)
 
-    if (error === undefined) {
+    if (error !== undefined) {
       // alert(error)
       return false
     }
@@ -82,7 +94,6 @@ export const useQuizStore = defineStore('quiz', () => {
   }
 
   async function getResponses() {
-    console.log('Fetching Responses')
     if (quiz.value?.id === undefined) return false
     const { data, error } = await fetchResponses(quiz.value.id)
     if (error !== undefined) return false
@@ -120,7 +131,8 @@ export const useQuizStore = defineStore('quiz', () => {
     if (response.value.completed) return false
     const answerToChange = response.value.answers.find((answer) => answer.id === questionID)
     answerToChange.answer = answer
-    answerToChange.correct = quiz.value.questions[answerToChange.id].correct_answer === answer
+    answerToChange.correct =
+      quiz.value.questions[answerToChange.id].correct_answer.answerText === answer
     answerToChange.updatesToAnswer++
     response.value.updatedAt = new Date()
 
@@ -138,25 +150,38 @@ export const useQuizStore = defineStore('quiz', () => {
       if (!confirmAnswered) throw new Error("Hasn't answered all questions")
 
       const score =
-        answers.reduce(
+        (answers.reduce(
           (accumulator, answer) => (answer.correct ? accumulator + 1 : accumulator),
           0,
-        ) / answers.length
+        ) *
+          100) /
+        answers.length
 
       const interleavedAnswersForLLM = []
+      const feedback = []
       for (const answer of answers) {
         const question = quiz.value.questions[answer.id]
+        const answerChoices = [question.correct_answer, ...question.fake_answers]
+
         interleavedAnswersForLLM.push({
           question: question.question,
           aboutQuestion: question.explanation,
-          correctAnswer: question.correct_answer,
+          correctAnswer: question.correct_answer.answerText,
           user_answer: answer,
-          fakeAnswers: question.fake_answers,
+          fakeAnswers: question.fake_answers.map((answer) => answer.answerText),
+        })
+
+        feedback.push({
+          questionID: question.id,
+          feedback:
+            answerChoices.find((choice) => choice.answerText === answer.answer)?.feedback ??
+            'Feedback Lost',
         })
       }
 
       //Both of this should have previous answers fed in at a later point
-      const feedback = await makeFeedback(interleavedAnswersForLLM)
+      // const feedback = await makeFeedback(interleavedAnswersForLLM)
+
       const additionalResources = await createAdditionResources(
         quiz.value.topicInformation,
         interleavedAnswersForLLM,
@@ -194,7 +219,7 @@ export const useQuizStore = defineStore('quiz', () => {
 
     const { data, error } = await storeResponse(responseData)
 
-    if (error === undefined) {
+    if (error !== undefined) {
       // alert(error)
       return false
     }
@@ -204,7 +229,89 @@ export const useQuizStore = defineStore('quiz', () => {
     return true
   }
   async function adaptiveRetry() {
-    //Not yet
+    if (!response.value.completed) return false
+    const incorrectAnswers = response.value.answers.filter((answer) => !answer.correct)
+
+    if (incorrectAnswers.length === 0) return false
+
+    const interleavedAnswersForLLM = []
+    const feedback = []
+    for (const answer of incorrectAnswers) {
+      const question = quiz.value.questions[answer.id]
+      const answerChoices = [question.correct_answer, ...question.fake_answers]
+
+      interleavedAnswersForLLM.push({
+        question: question.question,
+        aboutQuestion: question.explanation,
+        correctAnswer: question.correct_answer.answerText,
+        user_answer: answer,
+        fakeAnswers: question.fake_answers.map((answer) => answer.answerText),
+      })
+
+      feedback.push({
+        questionID: question.id,
+        feedback:
+          answerChoices.find((choice) => choice.answerText === answer.answer)?.feedback ??
+          'Feedback Lost',
+      })
+    }
+
+    try {
+      state.value = 'Building Quiz'
+      const quizQuestions = await buildRetryQuiz(
+        interleavedAnswersForLLM,
+        quiz.value.topicInformation,
+      )
+
+      quizQuestions.forEach((question, index) => {
+        question.id = index
+      })
+
+      const quizData = {
+        topic: quiz.value.topic,
+        level: quiz.value.level,
+        time: quiz.value.time,
+        basedOn: quiz.value.id,
+        topicInformation: quiz.value.topicInformation,
+        questions: quizQuestions,
+        userID: user.id,
+      }
+
+      state.value = 'Storing Quiz'
+      const { data, error } = await storeQuiz(quizData)
+
+      quizzes.value.unshift({
+        id: data.id,
+        topic: data.topic,
+        created_at: data.createdAt,
+      })
+
+      if (error) throw new Error(error)
+
+      quiz.value = data
+
+      const responseInfo = {
+        quizID: quiz.value.id,
+        basedOn: response.value.id,
+        answers: quiz.value.questions.map((question) => {
+          return { id: question.id, answer: null, updatesToAnswer: 0, correct: null }
+        }),
+      }
+
+      state.value = 'Generating Response'
+      const { data: responseData, error: responseError } = await storeResponse(responseInfo)
+
+      if (responseError !== undefined) {
+        throw new Error(responseError)
+      }
+
+      response.value = responseData
+
+      return true
+    } catch (e) {
+      alert(e)
+      return false
+    }
   }
 
   return {
@@ -212,6 +319,7 @@ export const useQuizStore = defineStore('quiz', () => {
     quiz,
     response,
     responses,
+    state,
     createQuiz,
     createResponse,
     getQuizzes,

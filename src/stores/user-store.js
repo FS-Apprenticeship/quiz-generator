@@ -75,8 +75,6 @@ export const useUserStore = defineStore('user', () => {
 
     if (error !== undefined) return false
 
-    console.log(data, error)
-
     userData.value = data
     return true
   }

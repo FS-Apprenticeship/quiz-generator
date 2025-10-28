@@ -1,8 +1,19 @@
 import { FunctionsHttpError, FunctionsRelayError, FunctionsFetchError } from '@supabase/supabase-js'
 import { supabase } from './database'
+import { useUserStore } from '@/stores/user-store'
 
 export async function getLLMResponse(promptData) {
+  const user = useUserStore()
+
+  if (user.id === undefined) {
+    console.log('No logged in user')
+    return false
+  }
+
   const { data, error } = await supabase.functions.invoke('openai-request', {
+    headers: {
+      Authorization: `Bearer ${user.session.access_token}`,
+    },
     body: { promptData },
   })
 

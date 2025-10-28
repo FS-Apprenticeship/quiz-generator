@@ -9,6 +9,7 @@ function convertQuizDataToObject(dataQuizData) {
     createdAt: dataQuizData.created_at,
     topic: dataQuizData.topic,
     level: dataQuizData.level,
+    timeOnTopic: dataQuizData.time_on_topic,
     topicInformation: dataQuizData.topic_information,
     questions: dataQuizData.questions,
   }
@@ -19,6 +20,7 @@ function convertQuizDataForDatabase(preData) {
     created_at: preData.createdAt,
     topic: preData.topic,
     level: preData.level,
+    time_on_topic: preData.time,
     topic_information: preData.topicInformation,
     questions: preData.questions,
     user_id: preData.userID,

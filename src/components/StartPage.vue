@@ -1,12 +1,33 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const router = useRouter()
 
-const listOfThings = ['Programming', 'Quiz Making', 'Math', 'Anything']
+const randomizedTopicList = ref(
+  (() => {
+    const listOfTopics = ['Programming', 'Quiz Making', 'Math', 'Anything']
+    const last = listOfTopics.pop()
+    listOfTopics.sort(() => Math.random() - 0.5)
+    return [...listOfTopics, last]
+  })(),
+)
+const topicIndex = ref(0)
+const topic = computed(() => randomizedTopicList.value[topicIndex.value])
+const countOfLoops = ref(8)
 
-const randomTopic = ref(listOfThings[Math.floor(Math.random() * listOfThings.length)])
+function randomizeTopic() {
+  if (topicIndex.value + 1 === randomizedTopicList.value.length) {
+    countOfLoops.value--
+    if (countOfLoops.value === 0) {
+      clearInterval(iter)
+      return
+    }
+    topicIndex.value = 0
+  } else topicIndex.value++
+}
+
+const iter = setInterval(randomizeTopic, 1000)
 </script>
 
 <template>
@@ -17,7 +38,7 @@ const randomTopic = ref(listOfThings[Math.floor(Math.random() * listOfThings.len
     <h1>Welcome to the Quiz Generator</h1>
     <h1>
       Take a quiz on
-      <span style="color: orange">{{ randomTopic }}</span>
+      <span style="color: orange">{{ topic }}</span>
     </h1>
     <button class="rounded" @click="router.push('/sign-up')">Sign Up</button>
   </main>

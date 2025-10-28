@@ -28,15 +28,15 @@ async function updateAnswer(answer) {
 <template>
   <h3>{{ question.question }}</h3>
 
-  <template v-for="answer in answers" :key="answer">
+  <template v-for="answer in answers" :key="answer.answerText">
     <input
       type="radio"
       name="answer"
-      :id="answer"
-      :checked="answer === response.answer"
-      @click="() => updateAnswer(answer)"
+      :id="answer.answerText"
+      :checked="answer.answerText === response.answer"
+      @click="updateAnswer(answer.answerText)"
     />
-    <label :for="answer">{{ answer }}</label>
+    <label :for="answer.answerText">{{ answer.answerText }}</label>
     <br />
   </template>
 </template>
@@ -49,6 +49,8 @@ h3 {
   color: #fff;
   margin-bottom: 20px;
   text-align: center; /* Center the question text */
+  width: 70%;
+  margin: 0 auto;
 }
 
 /* Styling for the radio input and label */
