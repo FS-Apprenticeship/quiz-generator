@@ -2,6 +2,7 @@
 import { useUserStore } from '@/stores/user-store'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import BaseButton from '../universals/BaseButton.vue'
 
 const router = useRouter()
 const user = useUserStore()
@@ -33,101 +34,57 @@ async function submit() {
 </script>
 
 <template>
-  <header>
-    <button class="return" @click="router.back()"><h1>&lt;</h1></button>
-    <h1 class="title">Sign Up!</h1>
-  </header>
-  <form @submit.prevent="submit">
-    <label for="email-address">Email:</label
-    ><input id="email-address" type="email" v-model="emailAddress" />
-    <p v-if="!validEmail">Make sure email is valid!</p>
-    <br />
-    <label for="password-main">Password:</label
-    ><input id="password-main" :type="passwordInput" v-model="password" />
-    <br />
-    <label for="password-confirm">Confirm Password:</label
-    ><input id="password-confirm" :type="passwordInput" v-model="confirmedPassword" />
-    <br />
-    <div>
-      <label for="view-password">View Password: </label>
+  <div class="relative flex flex-col justify-around items-center w-dvw h-dvh">
+    <header class="absolute top-0 left-0 right-0 flex items-center justify-around pt-2.5 w-dvw">
+      <BaseButton class="absolute left-0 ml-2 px-4" @click="router.back()"
+        ><h1>&lt;</h1></BaseButton
+      >
+      <h1 class="text-3xl">Sign Up!</h1>
+    </header>
+    <form
+      @submit.prevent="submit"
+      class="flex flex-col gap-2 w-md border-2 border-white rounded-lg p-4"
+    >
+      <label for="email-address" class="block font-semibold">Email:</label>
       <input
-        id="view-password"
-        @click="passwordVisible = !passwordVisible"
-        type="checkbox"
-        :value="passwordVisible"
+        id="email-address"
+        type="email"
+        v-model="emailAddress"
+        class="p-4 border border-b-gray-300 rounded-md h-10"
       />
-    </div>
-    <p v-if="password !== confirmedPassword">Passwords don't match</p>
-    <br />
-    <button type="submit" :disabled="!validEmail || password !== confirmedPassword">Sign Up</button>
-    <p v-if="error !== ''">{{ error }}</p>
-  </form>
+      <p v-if="!validEmail && emailAddress" class="text-red-500">Make sure email is valid!</p>
+      <br />
+      <label for="password-main" class="block font-semibold">Password:</label>
+      <input
+        id="password-main"
+        :type="passwordInput"
+        v-model="password"
+        class="p-4 border border-b-gray-300 rounded-md h-10"
+      />
+      <br />
+      <label for="password-confirm" class="block font-semibold">Confirm Password:</label>
+      <input
+        id="password-confirm"
+        :type="passwordInput"
+        v-model="confirmedPassword"
+        class="p-4 border border-b-gray-300 rounded-md h-10"
+      />
+      <br />
+      <div>
+        <label for="view-password" class="font-semibold">View Password: </label>
+        <input
+          id="view-password"
+          @click="passwordVisible = !passwordVisible"
+          type="checkbox"
+          :value="passwordVisible"
+        />
+      </div>
+      <p v-if="password !== confirmedPassword">Passwords don't match</p>
+      <br />
+      <BaseButton type="submit" :disabled="!validEmail || password !== confirmedPassword">
+        Sign Up
+      </BaseButton>
+      <p v-if="error !== ''">{{ error }}</p>
+    </form>
+  </div>
 </template>
-
-<style scoped>
-header {
-  height: 60px;
-  display: flex;
-  align-items: center;
-}
-
-header h1 {
-  margin: 0;
-  background-color: inherit;
-}
-
-.title {
-  margin-left: auto;
-  margin-right: auto;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-width: 420px;
-  padding: 16px;
-  border-radius: 8px;
-  border: white 1px solid;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: calc(25% - 100px);
-}
-
-label {
-  font-weight: bold;
-}
-
-input {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-}
-
-button[type='submit'] {
-  align-self: flex-start;
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: none;
-  background-color: orange;
-  color: white;
-  cursor: pointer;
-}
-
-button[disabled] {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-p {
-  color: #d32f2f;
-  margin: 0;
-}
-
-.return {
-  width: 60px;
-  height: 60px;
-  border: none;
-  background-color: orange;
-}
-</style>
