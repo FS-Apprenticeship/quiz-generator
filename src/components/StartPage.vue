@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 const router = useRouter()
 
@@ -15,6 +15,7 @@ const randomizedTopicList = ref(
 const topicIndex = ref(0)
 const topic = computed(() => randomizedTopicList.value[topicIndex.value])
 const countOfLoops = ref(8)
+let iter = undefined
 
 function randomizeTopic() {
   if (topicIndex.value + 1 === randomizedTopicList.value.length) {
@@ -27,7 +28,21 @@ function randomizeTopic() {
   } else topicIndex.value++
 }
 
-const iter = setInterval(randomizeTopic, 1000)
+function generateTopics() {
+  const listOfTopics = ['Programming', 'Quiz Making', 'Math', 'Anything']
+  const last = listOfTopics.pop()
+  listOfTopics.sort(() => Math.random() - 0.5)
+  randomizedTopicList.value = [...listOfTopics, last]
+}
+
+onMounted(() => {
+  generateTopics()
+  iter = setInterval(randomizeTopic, 1000)
+})
+
+onBeforeUnmount(() => {
+  clearInterval(iter)
+})
 </script>
 
 <template>
