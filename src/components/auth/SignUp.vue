@@ -3,6 +3,8 @@ import { useUserStore } from '@/stores/user-store'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '../universals/BaseButton.vue'
+import BackButtonHeader from '../universals/BackButtonHeader.vue'
+import InputLabelPair from '../universals/InputLabelPair.vue'
 
 const router = useRouter()
 const user = useUserStore()
@@ -35,41 +37,28 @@ async function submit() {
 
 <template>
   <div class="relative flex flex-col justify-around items-center w-dvw h-dvh">
-    <header class="absolute top-0 left-0 right-0 flex items-center justify-around pt-2.5 w-dvw">
-      <BaseButton class="absolute left-0 ml-2 px-4" @click="router.back()"
-        ><h1>&lt;</h1></BaseButton
-      >
-      <h1 class="text-3xl">Sign Up!</h1>
-    </header>
+    <BackButtonHeader>Sign Up!</BackButtonHeader>
     <form
       @submit.prevent="submit"
       class="flex flex-col gap-2 w-md border-2 border-white rounded-lg p-4"
     >
-      <label for="email-address" class="block font-semibold">Email:</label>
-      <input
-        id="email-address"
-        type="email"
+      <InputLabelPair
         v-model="emailAddress"
-        class="p-4 border border-b-gray-300 rounded-md h-10"
-      />
+        type="email"
+        id="email-address"
+        class="invalid:border-red-500"
+      >
+        Email:
+      </InputLabelPair>
       <p v-if="!validEmail && emailAddress" class="text-red-500">Make sure email is valid!</p>
       <br />
-      <label for="password-main" class="block font-semibold">Password:</label>
-      <input
-        id="password-main"
-        :type="passwordInput"
-        v-model="password"
-        class="p-4 border border-b-gray-300 rounded-md h-10"
-      />
+      <InputLabelPair v-model="password" id="password-main" :type="passwordInput">
+        Password:
+      </InputLabelPair>
       <br />
-      <label for="password-confirm" class="block font-semibold">Confirm Password:</label>
-      <input
-        id="password-confirm"
-        :type="passwordInput"
-        v-model="confirmedPassword"
-        class="p-4 border border-b-gray-300 rounded-md h-10"
-      />
-      <br />
+      <InputLabelPair v-model="confirmedPassword" id="password-confirm" :type="passwordInput">
+        Confirm Password:
+      </InputLabelPair>
       <div>
         <label for="view-password" class="font-semibold">View Password: </label>
         <input
