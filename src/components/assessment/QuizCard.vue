@@ -1,5 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import ItemCard from '../universals/ItemCard.vue'
 defineProps({
   quiz: {
     type: {
@@ -14,14 +15,5 @@ const router = useRouter()
 </script>
 
 <template>
-  <li class="quiz" @click="router.push(`/quiz/${quiz.id}/`)">
-    <h3>{{ quiz.topic }}</h3>
-  </li>
+  <ItemCard @click="router.push(`/quiz/${quiz.id}`)">{{ quiz.topic }}</ItemCard>
 </template>
-
-<style scoped>
-h3 {
-  margin-left: auto;
-  margin-right: auto;
-}
-</style>

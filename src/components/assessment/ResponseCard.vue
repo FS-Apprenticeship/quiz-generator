@@ -1,5 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import ItemCard from '../universals/ItemCard.vue'
 const { response } = defineProps({
   response: {
     type: {
@@ -24,15 +25,7 @@ function goToQuiz() {
 </script>
 
 <template>
-  <li class="response" @click="goToQuiz()">
-    <h3>Response {{ index + 1 }}</h3>
-    {{ response.completed ? 'Completed' : 'Incomplete' }}
-  </li>
+  <ItemCard @click="goToQuiz()">
+    Response {{ index + 1 }}: {{ response.completed ? 'Completed' : 'Incomplete' }}
+  </ItemCard>
 </template>
-
-<style scoped>
-h3 {
-  margin-left: auto;
-  margin-right: auto;
-}
-</style>
