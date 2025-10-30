@@ -151,6 +151,6 @@ async function adaptiveRetry() {
   </template>
 
   <template v-else>
-    <h1 class="text-center text-2xl font-bold text-gray-200 mt-20">LOADING...</h1>
+    <h1 class="text-center text-2xl font-bold mt-20">LOADING...</h1>
   </template>
 </template>

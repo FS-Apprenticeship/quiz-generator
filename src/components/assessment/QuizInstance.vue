@@ -52,7 +52,7 @@ async function submit() {
   <div class="flex flex-col min-h-screen">
     <template v-if="!resolved">
       <div class="flex justify-center items-center h-screen">
-        <h1 class="text-2xl font-semibold text-gray-700">Loading...</h1>
+        <h1 class="text-2xl font-semibold">Loading...</h1>
       </div>
     </template>
 
