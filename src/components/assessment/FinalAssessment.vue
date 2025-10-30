@@ -66,205 +66,91 @@ async function adaptiveRetry() {
 
 <template>
   <template v-if="resolved && quizExists">
-    <header>
-      <h1>{{ quiz?.topic }} - {{ response?.finalScore }}%</h1>
-    </header>
-    <main>
-      <div v-for="response in responsesToQuestions" :key="response.question.id">
-        <h3>{{ response.question.question }}</h3>
-        <template v-if="!response.correct">
-          Correct Answer: {{ response.question.correct_answer.answerText }}
-        </template>
-        Your Answer: {{ response.userAnswer }}
-        <h4>Feedback:</h4>
-        {{ response.feedback }}
-        <hr />
-      </div>
-      <div>
-        <h2>Recommended Resources:</h2>
-        {{ response?.resources.feedback ?? 'Loading' }}
-        <div v-for="id in response.resources.sectionsToReview ?? []" :key="id">
-          {{ quiz.topicInformation.sections[id]?.title }}
-          <p>{{ quiz.topicInformation.sections[id]?.information }}</p>
+    <div class="max-w-5xl mx-auto px-4 py-6">
+      <!-- Header -->
+      <header class="text-center mb-6">
+        <h1 class="text-3xl font-bold text-white">
+          {{ quiz?.topic }} - {{ response?.finalScore }}%
+        </h1>
+      </header>
+
+      <!-- Quiz Questions & Feedback -->
+      <main class="space-y-8">
+        <div
+          v-for="resp in responsesToQuestions"
+          :key="resp.question.id"
+          class="bg-sky-950 p-4 rounded-lg shadow-md text-gray-50"
+        >
+          <h3 class="font-semibold text-lg mb-2">{{ resp.question.question }}</h3>
+          <p>
+            <span v-if="!resp.correct" class="text-red-400">
+              Correct Answer: {{ resp.question.correct_answer.answerText }}
+            </span>
+          </p>
+          <p class="mt-1">
+            Your Answer: <span class="font-medium">{{ resp.userAnswer }}</span>
+          </p>
+          <h4 class="mt-2 font-semibold text-orange-400">Feedback:</h4>
+          <p class="text-gray-300">{{ resp.feedback }}</p>
         </div>
-      </div>
-    </main>
-    <div class="buttons">
-      <button @click="$router.push(`/quiz/${quiz.id}`)">Go Back!</button>
-      <button :disabled="perfectScore" @click="retry">Retry Missed Questions</button>
-      <button :disabled="perfectScore || generatingQuiz" @click="adaptiveRetry">
-        <template v-if="!generatingQuiz">Adaptive Retry</template>
-        <template v-else>{{ quizStore.state }}</template>
-      </button>
+
+        <!-- Recommended Resources -->
+        <section class="bg-sky-950 p-4 rounded-lg shadow-md text-gray-100">
+          <h2 class="text-2xl font-bold text-center mb-4">Recommended Resources</h2>
+          <p class="text-center mb-4">{{ response?.resources.feedback ?? 'Loading...' }}</p>
+          <div class="space-y-4">
+            <template v-for="id in response?.resources.sectionsToReview ?? []" :key="id">
+              <div
+                v-if="id < quiz.topicInformation.sections.length"
+                class="bg-gray-700 p-3 rounded-md"
+              >
+                <h3 class="font-semibold text-orange-400">
+                  {{ quiz.topicInformation.sections[id]?.title }}
+                  {{ id < quiz.topicInformation.sections.length }}
+                </h3>
+                <p class="text-gray-300 mt-1">
+                  {{ quiz.topicInformation.sections[id]?.information }}
+                </p>
+              </div>
+            </template>
+          </div>
+        </section>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+          <button
+            @click="$router.push(`/quiz/${quiz.id}`)"
+            class="px-6 py-2 bg-orange-400 text-white font-semibold rounded-lg hover:bg-orange-500 cursor-pointer transition"
+          >
+            Go Back!
+          </button>
+
+          <button
+            :disabled="perfectScore"
+            @click="retry"
+            class="px-6 py-2 bg-orange-400 text-white font-semibold rounded-lg hover:bg-orange-500 cursor-pointer transition disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed"
+          >
+            Retry Missed Questions
+          </button>
+
+          <button
+            :disabled="perfectScore || generatingQuiz"
+            @click="adaptiveRetry"
+            class="px-6 py-2 bg-orange-400 text-white font-semibold rounded-lg hover:bg-orange-500 cursor-pointer transition disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed"
+          >
+            <template v-if="!generatingQuiz">Adaptive Retry</template>
+            <template v-else>{{ quizStore.state }}</template>
+          </button>
+        </div>
+      </main>
     </div>
   </template>
+
   <template v-else-if="resolved">
-    <h1>QUIZ DOESN'T EXIST</h1>
+    <h1 class="text-center text-2xl font-bold text-red-500 mt-20">QUIZ DOESN'T EXIST</h1>
   </template>
+
   <template v-else>
-    <h1>LOADING...</h1>
+    <h1 class="text-center text-2xl font-bold mt-20">LOADING...</h1>
   </template>
 </template>
-
-<style scoped>
-/* Header */
-header {
-  margin-top: 20px;
-  margin-left: 10px;
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: space-between;
-  align-items: center;
-}
-
-h1 {
-  width: 100%;
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #eee;
-}
-
-h2 {
-  margin: 20px auto 20px 0;
-  font-size: 1.25rem;
-  width: fit-content;
-  color: #ddd;
-}
-
-/* Buttons */
-header button {
-  height: 40px;
-  width: 48%;
-  border-radius: 8px;
-  border: none;
-  background-color: orange;
-  color: white;
-  font-weight: 600;
-}
-
-header button:hover {
-  background-color: darkorange;
-  cursor: pointer;
-}
-
-/* Quiz Questions and Feedback Section */
-main {
-  margin: 20px 20%;
-  display: flex;
-  flex-direction: column;
-  align-self: center;
-  width: 60%;
-}
-
-h3 {
-  font-size: 1.1rem;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #ccc;
-}
-
-h4 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #ccc;
-  margin-top: 10px;
-}
-
-div {
-  margin-bottom: 20px;
-}
-
-p {
-  text-indent: 0.5in;
-  font-size: 1rem;
-  color: #fff;
-  margin-top: 5px;
-}
-
-hr {
-  width: 75%;
-  margin-left: 12.5%;
-  margin-bottom: 30px;
-}
-
-/* Resources Section */
-h2 {
-  text-align: center;
-  font-size: 1.2rem;
-  margin-top: 30px;
-}
-
-.resources {
-  font-size: 1rem;
-  color: #444;
-  text-align: center;
-  margin-top: 10px;
-}
-
-/* Retry Button */
-.buttons {
-  margin-left: auto;
-  margin-right: auto;
-  width: 80%;
-}
-
-button {
-  background-color: orange;
-  color: white;
-  border: none;
-  padding: 15px 30px;
-  margin-left: 0%;
-  margin-right: 20%;
-}
-
-button:disabled {
-  background-color: darkorange;
-  color: #444;
-  cursor: not-allowed;
-}
-
-/* Quiz Results List */
-ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  padding: 0;
-  margin: 20px 0;
-  width: 100%;
-  justify-content: center;
-  list-style: none;
-}
-
-li {
-  height: 100px;
-  width: 45%;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background-color: #f9f9f9;
-  transition: background-color 0.3s ease;
-}
-
-li:hover {
-  background-color: #f1f1f1;
-}
-
-li button {
-  width: 100%;
-  height: 40px;
-  border-radius: 8px;
-  border: none;
-  background-color: orange;
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-li button:hover {
-  background-color: darkorange;
-}
-</style>

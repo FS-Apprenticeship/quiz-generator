@@ -49,83 +49,56 @@ async function submit() {
 </script>
 
 <template>
-  <template v-if="resolved && quizExists">
-    <header>
-      <h1>{{ quiz?.topic }}</h1>
-    </header>
-    <main>
-      <div class="control">
-        <button class="navigation rounded" @click="moveQuestion(-1)">&lt;</button>
-        {{ questionIndex + 1 }} / {{ response.answers.length }}
-        <button class="navigation rounded" @click="moveQuestion(1)">&gt;</button>
-        <button class="submit rounded" @click="submit">Submit Quiz</button>
+  <div class="flex flex-col min-h-screen">
+    <template v-if="!resolved">
+      <div class="flex justify-center items-center h-screen">
+        <h1 class="text-2xl font-semibold">Loading...</h1>
       </div>
-      <SingleQuestion :question="question" :response="questionResponse" />
-    </main>
-  </template>
-  <template v-else-if="resolved">
-    <h1>QUIZ DOESN'T EXIST</h1>
-  </template>
-  <template v-else>
-    <h1>LOADING...</h1>
-  </template>
+    </template>
+
+    <template v-else-if="resolved && !quizExists">
+      <div class="flex justify-center items-center h-screen">
+        <h1 class="text-2xl font-semibold text-red-600">Quiz Not Found</h1>
+      </div>
+    </template>
+
+    <template v-else>
+      <header class="flex justify-center py-4 bg-sky-800 text-white">
+        <h1 class="text-3xl font-bold">{{ quiz?.topic }}</h1>
+      </header>
+
+      <main class="flex flex-col flex-1 p-4">
+        <div class="flex items-center justify-between mb-4">
+          <button
+            class="px-4 py-2 rounded bg-sky-400 text-white hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allow"
+            @click="moveQuestion(-1)"
+            :disabled="questionIndex === 0"
+          >
+            &lt;
+          </button>
+
+          <span class="text-lg font-medium px-3">
+            {{ questionIndex + 1 }} / {{ response.answers.length }}
+          </span>
+
+          <button
+            class="px-4 py-2 rounded bg-orange-400 text-white hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="moveQuestion(1)"
+            :disabled="questionIndex === response.answers.length - 1"
+          >
+            &gt;
+          </button>
+
+          <button
+            class="ml-auto px-4 py-2 rounded bg-sky-500 text-white hover:bg-green-600"
+            @click="submit"
+          >
+            Submit Quiz
+          </button>
+        </div>
+
+        <SingleQuestion :question="question" :response="questionResponse" />
+      </main>
+    </template>
+  </div>
 </template>
-
-<style scoped>
-header {
-  height: 10%;
-  padding: 10px 10px 0 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-button.rounded {
-  height: 40px;
-  border-radius: 8px;
-  border: none;
-  padding: 0 12px;
-  color: white;
-  background-color: orange;
-  cursor: pointer;
-}
-
-button.rounded:hover {
-  background: darkorange;
-}
-
-main {
-  height: 90%;
-  width: 100%;
-}
-
-h1 {
-  margin-bottom: 15px;
-}
-
-.control {
-  height: 5%;
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.navigation {
-  border: none;
-  background-color: orange;
-  height: 100%;
-  width: 50px;
-  margin: 0 10px;
-}
-
-.submit {
-  border: none;
-  background-color: orange;
-  height: 100%;
-  width: auto;
-  padding: 0 12px;
-  margin-left: auto;
-  margin-right: 10px;
-}
-</style>
