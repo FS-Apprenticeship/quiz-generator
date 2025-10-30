@@ -73,5 +73,3 @@ if (user.user !== undefined) {
     </form>
   </div>
 </template>
-
-<style scoped></style>

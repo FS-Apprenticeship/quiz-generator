@@ -48,10 +48,10 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="min-h-screen flex flex-col">
-    <header>
+    <header class="flex justify-end w-full pt-2.5 pr-2.5">
       <BaseButton @click="router.push('/sign-in')">Sign In</BaseButton>
     </header>
-    <main class="flex-1 flex px-4 flex-col justify-center">
+    <main class="flex-1 flex px-4 flex-col justify-center items-center">
       <h1 class="text-3xl">Welcome to the Quiz Generator</h1>
       <h1 class="text-3xl">
         Take a quiz on
@@ -61,25 +61,3 @@ onBeforeUnmount(() => {
     </main>
   </div>
 </template>
-
-<style scoped>
-header {
-  height: 10%;
-  padding: 10px 10px 0 0;
-  width: 100%;
-  display: flex;
-  justify-content: right;
-}
-
-main {
-  height: 90%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-h1 {
-  margin-bottom: 15px;
-}
-</style>

@@ -26,92 +26,27 @@ async function updateAnswer(answer) {
 </script>
 
 <template>
-  <h3>{{ question.question }}</h3>
+  <h3 class="text-xl font-bold text-center text-white mb-6">{{ question.question }}</h3>
 
-  <template v-for="answer in answers" :key="answer.answerText">
-    <input
-      type="radio"
-      name="answer"
-      :id="answer.answerText"
-      :checked="answer.answerText === response.answer"
-      @click="updateAnswer(answer.answerText)"
-    />
-    <label :for="answer.answerText">{{ answer.answerText }}</label>
-    <br />
-  </template>
+  <div class="flex flex-col items-center gap-4">
+    <template v-for="answer in answers" :key="answer.answerText">
+      <label
+        class="relative flex items-center cursor-pointer px-4 py-2 w-3/4 border rounded-lg text-gray-200 hover:text-orange-500 peer-checked:text-orange-500 transition-colors"
+      >
+        <input
+          type="radio"
+          name="answer"
+          :value="answer.answerText"
+          :checked="answer.answerText === response.answer"
+          @click="updateAnswer(answer.answerText)"
+          class="peer absolute opacity-0 w-0 h-0"
+        />
+        <!-- Custom circle -->
+        <span
+          class="shrink-0 w-5 h-5 mr-4 border-2 border-gray-400 rounded-full bg-white peer-hover:border-orange-500 peer-checked:bg-orange-500 peer-checked:border-orange-500 transition-colors"
+        ></span>
+        <span class="flex-1">{{ answer.answerText }}</span>
+      </label>
+    </template>
+  </div>
 </template>
-
-<style scoped>
-/* General styling */
-h3 {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #fff;
-  margin-bottom: 20px;
-  text-align: center; /* Center the question text */
-  width: 70%;
-  margin: 0 auto;
-}
-
-/* Styling for the radio input and label */
-input[type='radio'] {
-  display: none; /* Hide default radio button */
-}
-
-/* Custom radio button design */
-input[type='radio'] + label {
-  position: relative;
-  display: inline-block;
-  padding-left: 30px; /* Space for the custom radio */
-  margin: 10px 25%;
-  font-size: 1rem;
-  color: #ddd;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-input[type='radio'] + label:before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  border: 2px solid #888;
-  border-radius: 50%;
-  background-color: white;
-  transition:
-    background-color 0.3s ease,
-    border 0.3s ease;
-}
-
-/* Checked radio button style */
-input[type='radio']:checked + label:before {
-  background-color: orange; /* Custom selected background */
-  border-color: orange; /* Matching border color */
-}
-
-input[type='radio']:checked + label {
-  color: orange; /* Change label color when selected */
-}
-
-/* Hover effects */
-input[type='radio'] + label:hover {
-  color: orange;
-}
-
-input[type='radio']:not(:checked):hover + label:before {
-  border-color: orange;
-}
-
-/* Focus state for better accessibility */
-input[type='radio']:focus + label:before {
-  outline: 3px solid orange; /* Visible outline on focus */
-}
-
-/* Space between the radio button options */
-br {
-  margin-bottom: 10px;
-}
-</style>
